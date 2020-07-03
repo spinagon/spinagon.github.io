@@ -1,9 +1,9 @@
-echo "<html><body>\n" > index.html
+echo "<html><body>" > index.html
 for FILE in *
 do
-    echo '<a href="'$FILE'">'$FILE'</a><br>\n' >> index.html
+    echo '<a href="'$FILE'">'$FILE'</a><br>' >> index.html
 done
-echo "</body></html>\n" >> index.html
+echo "</body></html>" >> index.html
 
 git add .
 git commit -m "update"
