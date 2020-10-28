@@ -4,7 +4,8 @@ function main() {
     iframe = document.getElementById("1");
     iframe.src = name_from_num(n);
     frame = document.getElementById("frame");
-    frame.innerHTML = iframe.contentDocument || iframe.contentWindow.document;
+    page = iframe.contentDocument || iframe.contentWindow.document;
+    frame.innerHTML = page.getElementsByClassName('ascii')[0];
     n += 1;
     if (n > 29) {n = 1;}
     setTimeout(main, 100);
