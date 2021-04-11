@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Doof! Media - pact_livereads</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width" name="viewport"/>
+<style>
+        /* General */
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+    font-weight: 700;
+}
+
+body {
+    font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img {
+    object-fit: contain;
+}
+
+.markdown {
+    max-width: 100%;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+.preserve-whitespace {
+    white-space: pre-wrap;
+}
+
+.spoiler {
+    /* width: fit-content; */
+    display: inline-block;
+    /* This is more consistent across browsers, the old attribute worked well under Chrome but not FireFox. */
+}
+
+.spoiler--hidden {
+    cursor: pointer;
+}
+
+.spoiler-text {
+    border-radius: 3px;
+}
+
+.spoiler--hidden .spoiler-text {
+    color: rgba(0, 0, 0, 0);
+}
+
+.spoiler--hidden .spoiler-text::selection {
+    color: rgba(0, 0, 0, 0);
+}
+
+.spoiler-image {
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.spoiler--hidden .spoiler-image {
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.spoiler--hidden .spoiler-image * {
+    filter: blur(44px);
+}
+
+.spoiler--hidden .spoiler-image:after {
+    content: "SPOILER";
+    color: #dcddde;
+    background-color: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    padding: 100%;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    font-size: 0.9em;
+}
+
+.spoiler--hidden:hover .spoiler-image:after {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.quote {
+    margin: 0.1em 0;
+    padding-left: 0.6em;
+    border-left: 4px solid;
+    border-radius: 3px;
+}
+
+.pre {
+    font-family: "Consolas", "Courier New", Courier, monospace;
+}
+
+.pre--multiline {
+    margin-top: 0.25em;
+    padding: 0.5em;
+    border: 2px solid;
+    border-radius: 5px;
+}
+
+.pre--inline {
+    padding: 2px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.mention {
+    border-radius: 3px;
+    padding: 0 2px;
+    color: #7289da;
+    background: rgba(114, 137, 218, .1);
+    font-weight: 500;
+}
+
+.emoji {
+    width: 1.25em;
+    height: 1.25em;
+    margin: 0 0.06em;
+    vertical-align: -0.4em;
+}
+
+.emoji--small {
+    width: 1em;
+    height: 1em;
+}
+
+.emoji--large {
+    width: 2.8em;
+    height: 2.8em;
+}
+
+/* Preamble */
+
+.preamble {
+    display: grid;
+    margin: 0 0.3em 0.6em 0.3em;
+    max-width: 100%;
+    grid-template-columns: auto 1fr;
+}
+
+.preamble__guild-icon-container {
+    grid-column: 1;
+}
+
+.preamble__guild-icon {
+    max-width: 88px;
+    max-height: 88px;
+}
+
+.preamble__entries-container {
+    grid-column: 2;
+    margin-left: 0.6em;
+}
+
+.preamble__entry {
+    font-size: 1.4em;
+}
+
+.preamble__entry--small {
+    font-size: 1em;
+}
+
+/* Chatlog */
+
+.chatlog {
+    max-width: 100%;
+}
+
+.chatlog__message-group {
+    display: grid;
+    margin: 0 0.6em;
+    padding: 0.9em 0;
+    border-top: 1px solid;
+    grid-template-columns: auto 1fr;
+}
+
+.chatlog__reference-symbol {
+    grid-column: 1;
+    border-style: solid;
+    border-width: 2px 0 0 2px;
+    border-radius: 8px 0 0 0;
+    margin-left: 16px;
+    margin-top: 8px;
+}
+
+.chatlog__reference {
+    display: flex;
+    grid-column: 2;
+    margin-left: 1.2em;
+    margin-bottom: 0.25em;
+    font-size: 0.875em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    align-items: center;
+}
+
+.chatlog__reference-avatar {
+    border-radius: 50%;
+    height: 16px;
+    width: 16px;
+    margin-right: 0.25em;
+}
+
+.chatlog__reference-name {
+    margin-right: 0.25em;
+    font-weight: 600;
+}
+
+.chatlog__reference-link {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chatlog__reference-link:hover {
+    text-decoration: none;
+}
+
+.chatlog__reference-content > * {
+    display: inline;
+}
+
+.chatlog__reference-edited-timestamp {
+    margin-left: 0.25em;
+    font-size: 0.8em;
+}
+
+.chatlog__author-avatar-container {
+    grid-column: 1;
+    width: 40px;
+    height: 40px;
+}
+
+.chatlog__author-avatar {
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+}
+
+.chatlog__messages {
+    grid-column: 2;
+    margin-left: 1.2em;
+    min-width: 50%;
+}
+
+.chatlog__author-name {
+    font-weight: 500;
+}
+
+.chatlog__timestamp {
+    margin-left: 0.3em;
+    font-size: 0.75em;
+}
+
+.chatlog__message {
+    padding: 0.1em 0.3em;
+    margin: 0 -0.3em;
+    background-color: transparent;
+    transition: background-color 1s ease;
+}
+
+.chatlog__content {
+    font-size: 0.95em;
+    word-wrap: break-word;
+}
+
+.chatlog__edited-timestamp {
+    margin-left: 0.15em;
+    font-size: 0.8em;
+}
+
+.chatlog__attachment {
+    margin-top: 0.3em;
+}
+
+.chatlog__attachment-thumbnail {
+    vertical-align: top;
+    max-width: 45vw;
+    max-height: 500px;
+    border-radius: 3px;
+}
+
+.chatlog__attachment-container {
+    height: 40px;
+    width: 100%;
+    max-width: 520px;
+    padding: 10px;
+    border: 1px solid;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.chatlog__attachment-icon {
+    float: left;
+    height: 100%;
+    margin-right: 10px;
+}
+
+.chatlog__attachment-icon > .a {
+    fill: #f4f5fb;
+    d: path("M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z");
+}
+
+.chatlog__attachment-icon > .b {
+    fill: #7789c4;
+    d: path("M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z");
+}
+
+.chatlog__attachment-icon > .c {
+    fill: #f4f5fb;
+    d: path("M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z");
+}
+
+.chatlog__attachment-icon > .d {
+    fill: #7789c4;
+    d: path("M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z");
+}
+
+.chatlog__attachment-filesize {
+    color: #72767d;
+    font-size: 12px;
+}
+
+.chatlog__attachment-filename {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chatlog__embed {
+    display: flex;
+    margin-top: 0.3em;
+    max-width: 520px;
+}
+
+.chatlog__embed-color-pill {
+    flex-shrink: 0;
+    width: 0.25em;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.chatlog__embed-content-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em 0.6em;
+    border: 1px solid;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.chatlog__embed-content {
+    display: flex;
+    width: 100%;
+}
+
+.chatlog__embed-text {
+    flex: 1;
+}
+
+.chatlog__embed-author {
+    display: flex;
+    margin-bottom: 0.3em;
+    align-items: center;
+}
+
+.chatlog__embed-author-icon {
+    margin-right: 0.5em;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.chatlog__embed-author-name {
+    font-size: 0.875em;
+    font-weight: 600;
+}
+
+.chatlog__embed-title {
+    margin-bottom: 0.2em;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+
+.chatlog__embed-description {
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+.chatlog__embed-fields {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.chatlog__embed-field {
+    flex: 0;
+    min-width: 100%;
+    max-width: 506px;
+    padding-top: 0.6em;
+    font-size: 0.875em;
+}
+
+.chatlog__embed-field--inline {
+    flex: 1;
+    flex-basis: auto;
+    min-width: 150px;
+}
+
+.chatlog__embed-field-name {
+    margin-bottom: 0.2em;
+    font-weight: 600;
+}
+
+.chatlog__embed-field-value {
+    font-weight: 500;
+}
+
+.chatlog__embed-thumbnail {
+    flex: 0;
+    margin-left: 1.2em;
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 3px;
+}
+
+.chatlog__embed-image-container {
+    margin-top: 0.6em;
+}
+
+.chatlog__embed-image {
+    max-width: 500px;
+    max-height: 400px;
+    border-radius: 3px;
+}
+
+.chatlog__embed-footer {
+    margin-top: 0.6em;
+}
+
+.chatlog__embed-footer-icon {
+    margin-right: 0.2em;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.chatlog__embed-footer-text {
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+.chatlog__reactions {
+    display: flex;
+}
+
+.chatlog__reaction {
+    display: flex;
+    align-items: center;
+    margin: 0.35em 0.1em 0.1em 0.1em;
+    padding: 0.2em 0.35em;
+    border-radius: 3px;
+}
+
+.chatlog__reaction-count {
+    min-width: 9px;
+    margin-left: 0.35em;
+    font-size: 0.875em;
+}
+
+.chatlog__bot-tag {
+    position: relative;
+    top: -.2em;
+    margin-left: 0.3em;
+    padding: 0.05em 0.3em;
+    border-radius: 3px;
+    vertical-align: middle;
+    line-height: 1.3;
+    background: #7289da;
+    color: #ffffff;
+    font-size: 0.625em;
+    font-weight: 500;
+}
+
+/* Postamble */
+
+.postamble {
+    margin: 1.4em 0.3em 0.6em 0.3em;
+    padding: 1em;
+    border-top: 1px solid;
+}
+    </style>
+<style>
+        /* General */
+
+body {
+    background-color: #36393e;
+    color: #dcddde;
+}
+
+a {
+    color: #0096cf;
+}
+
+.spoiler-text {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.spoiler--hidden .spoiler-text {
+    background-color: #202225;
+}
+
+.spoiler--hidden:hover .spoiler-text {
+    background-color: rgba(32, 34, 37, 0.8);
+}
+
+.quote {
+    border-color: #4f545c;
+}
+
+.pre {
+    background-color: #2f3136 !important;
+}
+
+.pre--multiline {
+    border-color: #282b30 !important;
+    color: #b9bbbe !important;
+}
+
+/* === Preamble === */
+
+.preamble__entry {
+    color: #ffffff;
+}
+
+/* Chatlog */
+
+.chatlog__message-group {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.chatlog__reference-symbol {
+    border-color: #4f545c;
+}
+
+.chatlog__reference {
+    color: #b5b6b8;
+}
+
+.chatlog__reference-link {
+    color: #b5b6b8;
+}
+
+.chatlog__reference-link:hover {
+    color: #ffffff;
+}
+
+.chatlog__reference-edited-timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__author-name {
+    color: #ffffff;
+}
+
+.chatlog__timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__message--highlighted {
+    background-color: rgba(114, 137, 218, 0.2) !important;
+}
+
+.chatlog__message--pinned {
+    background-color: rgba(249, 168, 37, 0.05);
+}
+
+.chatlog__attachment-container {
+    background-color: #2f3136;
+    border-color: #292b2f;
+}
+
+.chatlog__edited-timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__embed-color-pill--default {
+    background-color: rgba(79, 84, 92, 1);
+}
+
+.chatlog__embed-content-container {
+    background-color: rgba(46, 48, 54, 0.3);
+    border-color: rgba(46, 48, 54, 0.6);
+}
+
+.chatlog__embed-author-name {
+    color: #ffffff;
+}
+
+.chatlog__embed-author-name-link {
+    color: #ffffff;
+}
+
+.chatlog__embed-title {
+    color: #ffffff;
+}
+
+.chatlog__embed-description {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__embed-field-name {
+    color: #ffffff;
+}
+
+.chatlog__embed-field-value {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__embed-footer {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__reaction {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chatlog__reaction-count {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Postamble */
+
+.postamble {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.postamble__entry {
+    color: #ffffff;
+}
+    </style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+<script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler--hidden');
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="preamble">
+<div class="preamble__guild-icon-container">
+<img alt="Guild icon" class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/352800639396347935/d9de0209eacab281ef47429ddb542243.png"/>
+</div>
+<div class="preamble__entries-container">
+<div class="preamble__entry">Doof! Media</div>
+<div class="preamble__entry">Live Reads / pact_livereads</div>
+</div>
+</div>
+<div class="chatlog"><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">17-Apr-19 03:09 AM</span>
+<div class="chatlog__message" data-message-id="567864243798671370" id="message-567864243798671370">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Do you think I have time for a chapter before Wgw starts recording?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567865570607759371" id="message-567865570607759371">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Alright I stared at the title of the chapter until I talked myself into it let's gooooo!! Bonds 1.7!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567865749432041472" id="message-567865749432041472">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Damn it.</div> If I sold a part of myself to demons every time blake started a chapter like this, how many apologies would I be left with</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567866190693793812" id="message-567866190693793812">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“You don’t go running off to check if you haven’t read about it in depth.  There’s material on this guy.”  Her voice was rising as she talked.</div> I like that we're drawing out this comparison between them. It might not even be because of any inherent <em>nature</em> that they've fallen into these roles</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567866767725297666" id="message-567866767725297666">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">It's just that her primary role in helping blake is information-based, since she's incorporeal, and when he makes decisions without the information she could feel like he's disregarding/ignoring her when she's trying to be useful in pretty much the one way she can; I hesitate to say the same dynamic would occur if their roles were switched, but it might</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567867071963332615" id="message-567867071963332615">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“What Laird said… I had the impression this thing might have killed Molly, and that Laird was misleading us when he said he knew what killed her.  By saying that, he leads us to think the threat is from out there, and that way we have our backs turned when the threat from within comes after us.”</div> seems like a laird thing to do yeah. Blake is a little reckless and can't sit still, sure, but he doesn't run on instincts either (as shown during his first interaction with Joel)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567867645421027339" id="message-567867645421027339">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“It doesn’t,” I said.  “Which puts me in the funny spot of feeling more sure that it’s in that room, than I was before.”</div> But things <em>do</em> feel off to him</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567867820432424961" id="message-567867820432424961">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">he didn't survive on the streets by instinct, he keeps a good head on his shoulders, but that's not to say he didn't <em>develop</em> any</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567868687336603648" id="message-567868687336603648">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">This is the sort of thing we need to read before you go to places like that.”
+
+“Rose,” I said.  So much for that bit on emotional and mental footing.
+
+“I don’t want to let this opportunity go by, because it needs saying.  First you go off with Laird, and I have to pull your ass out of the fire, and now you go-”
+
+“Rose!”  I said, louder.</div> Im more scared of this argument than I was the first time. I'm also a <em>little</em> more with Rose here (although that's probably just personal bias), because she Saved Your Ass with the Power Of Reading, and maybe she deserves a say. Like I said, maybe developing a bitta Byron Syndrome, feeling  disproportionally empathetic to the twin that's locked away, but she's got a bit of a point</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869011484999680" id="message-567869011484999680">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“We can’t do this,” I said.  “You second guessing me at every turn.  This arguing.  I’ve been through some shit-”</div> Well, if you want to work without clarifying and second guessing constantly, you need to have a consistent system that you both agree to so that you can make decisions quickly.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869265101979686" id="message-567869265101979686">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Before,” I said.  “Before any of this.  I’m talking about when I was seventeen and newly homeless and picking the wrong spot to settle down for the night, only to find out that a local gang thinks you’re staking out their stash or drop point or something, and you get beat down by a group of six or seven people?  Or having a group of teenagers with BB guns come after you because they want a live target and you’re pretty much subhuman to them?  The pellets don’t go very far beneath the skin, but one of them hit something, because my arm bruised purple from the bicep to my hand.”</div> That said, sweet <em>scion</em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869371075264538" id="message-567869371075264538">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">he's been through some shit, I'll give it to 'im</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869741037780992" id="message-567869741037780992">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I can understand Blake's feeling that Rose doesn't know what life or death really means yet, that she's used to having time and energy to think things out beforehand, that she comes from a position of privilege that she doesn't understand yet. I get that blake gets that rose doesn't get it.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869758159061022" id="message-567869758159061022">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><em>But</em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567869835955011611" id="message-567869835955011611">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">She's *stuck in a god damn <strong>mirror*</strong></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567870107817082881" id="message-567870107817082881">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">The only way she can help, the only way her spending nights reading all those books is gonna contribute to the continued survival of <em>both</em> of them is if she's fucking <em>listened to</em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567870711520034816" id="message-567870711520034816">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I made it this far with my instincts.  I can’t and won’t abandon them.”
+
+“I’m going to be a bit of a bitch here,” Rose said.  “I don’t think your instincts are that good.”</div> Okay, I'll cave, I was wrong. But I think he's at least a little wrong here too. he's not an idiot, and his mind has served him a bit better than his instincts so far. That said, you don't just go from hearing about your mirror-bro's traumatic teenage years and then go <em>straight into being a bitch</em> Rose</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567871045323849728" id="message-567871045323849728">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“We don’t have time,” she said.  “At this rate, you’re going to make a mistake, and we can’t afford mistakes.”
+
+“Then help.  Continue helping, please.  We’re the same, the only difference being that I walked a different path.”</div> You really do gotta let her if you want her to help, blake.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567871359661899816" id="message-567871359661899816">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“I’m going to ask it anyways,” I said.  “That you trust me, and that you trust yourself.  I’ll talk to you about this stuff more, but I need it to be a talk.  Don’t second guess everything I do, or it’s just going to become noise, and the doubts are going to fuck me up as much as anything.  I need cooperation, collaboration.”</div> maybe she wouldn't second guess everything you do if you did a couple non-stupid things in the middle there</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872035309748224" id="message-567872035309748224">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> In the end, this author used an Ut Vires approach pointing to Contrarium methodology.  An abstract entity bound in a rule-defining diagram of geometric lines and Byzantine notation. </div> This is really cool, I like that this is a magic system unafraid to treat more abstract things as metaphysical reality. Like...Patterns, for instance (Stormlight Archive reference)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872356970921985" id="message-567872356970921985">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">a pile of festering boar carcasses, six feet high, each carved with his name when well into their state of decay, the decay timed using refrigeration to be roughly parallel; seven jars of burning hair, resupplied keep the flames perpetually alight;</div> I'm sure there are logical and practical reasons to use...uh...all this</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872386813263890" id="message-567872386813263890">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">but SERIOUSLY WHAT THE FUCK</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872538441547776" id="message-567872538441547776">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">For more on the reasoning behind this methodology, please see my other work, Dark Contracts, chapter four.</div> I'm not sure if I'd want to read the reasoning or not</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872591868723224" id="message-567872591868723224">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">maybe im better off in blissful ignorance</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567872915480117270" id="message-567872915480117270">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The child was unharmed and largely unaware of what occurred.</div> No children were harmed in the making of this Demon Circle Place Thing</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567873415382302720" id="message-567873415382302720">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Option at hand,” I said, as I turned the page to get a look at what came next, “I guess Uncle Charles or Aunt Irene get offhand mentions in the books.”</div> the fact that it's probably her baby either makes this a little better or a little lot worse but <em>certainly</em> makes this author  a bit of a coldhearted er...hellhound</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567874019223666699" id="message-567874019223666699">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Barbers were once surgeons, in addition to their other roles.  The red on a barber’s pole is a reference to bloodletting.</div> "What'll it be today Jay-man?"
+"Couple inches trim, shave, fade on the left side...Oh! And a liver transplant- don't worry, brought my own liver! Both of 'em if you know what I mean!"</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567874406278234112" id="message-567874406278234112">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Barbatorem is both, a warrior of sorts, acting with surgical precision on whatever target he is directed at. </div> I unleash my demon upon ur kidneys motherfuckers</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567874935998119977" id="message-567874935998119977">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">This author and three acquaintances have summoned and used him without issue.</div> But what did they rate him on "Y- Y<em>elp</em> they're dragging me down I don't want to g-"? Did they like their haircuts? Did he take too much off the top? Decapitate you because you should've specified?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567875504166928404" id="message-567875504166928404">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The unawakened tend to note a stench of rot, blood or burning hair, or a crude but exceptionally sharp and sturdy cutting instrument found in the aftermath of a grisly event, invariably lost a day or two later.</div> Barbatorem irl when he's summoned and can't find his shit</span>
+</div>
+</div>
+<div class="chatlog__attachment">
+<div class="" onclick="">
+<div class="">
+<a href="https://cdn.discordapp.com/attachments/477136633578389505/567875503520743431/Z.png">
+<img alt="Image attachment" class="chatlog__attachment-thumbnail" src="https://cdn.discordapp.com/attachments/477136633578389505/567875503520743431/Z.png" title="Image: Z.png (105.25 KB)"/>
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567875779006955551" id="message-567875779006955551">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Physically, he rends his victims, and the surgeon aspect becomes evident in how he inflicts the maximum damage possible without ever killing them,</div> Guys I think (ward spoiler) <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">Darlene fucking murdered Barbatorem</span></span></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567876248064360457" id="message-567876248064360457">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">his victims typically die by other means like starvation or dehydration, unable to move under their own power or communicate a request for aid, due to a lack of limbs, missing tongue and teeth or...</div> Yo i be makin jokes but uhhhhhhhhh......I'm happy if we never ever ever meet barbs thanks</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567876595214188549" id="message-567876595214188549">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> It is believed that he can sever his target’s ability to access any higher plane, forever and irrevocably denying them whatever good things might await them after death, and he can remove any ability a practitioner has.  He can pass into a demesne without needing permission, though he cannot enter an ordinary home owned by a non-practitioner (see Classifying Others, chapter four).  He can evade barriers and typical practitioner’s defenses.  This in mind, he obviously serves as a suitable weapon if directed at a practitioner.</div> He sounds like the Sting of Pact so far if this is what a "suitable" weapon can do what the fuck can a good one do!?!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567877680348004383" id="message-567877680348004383">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Previous forms include: a bipedal sheep, largely bald but for sparse patches; a bloated man disfigured to a monstrous point by lash-wounds; a pair of children hand-in-hand; and a legless man on a horse.  </div> yo he's terrifying in a lot of these forms here but also just a sheep</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567877752947081217" id="message-567877752947081217">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">a sheep furry...but not furry cuz bald</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567877790527913993" id="message-567877790527913993">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">actually that's a bit terrifying</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878178610216961" id="message-567878178610216961">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Death, mutilation and a lack of hair figure into each form in one way or another</div> Yo. You can kill me, mutilate me what have you. But if you touch a god damn hair in my head I'm selling my soul to someone who tracks you down and smothers you in their beard</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878463743328256" id="message-567878463743328256">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He will offer to extend a practitioner’s natural lifespan by half-again or by twenty-five years, whichever is less, at the cost of the practitioner forever smelling blood, rot, and/or burning hair.  He can offer to ensure that one’s blades never dull, in exchange for enough of the practitioner’s flayed skin to fill two cupped hands.</div> I feel like I'm gonna be making a lot of 'will you press the button' references</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878536984133683" id="message-567878536984133683">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">in fact im just gonna enter all these in will you press the button</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878603812110347" id="message-567878603812110347">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">the answer is fucking no</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878899359416326" id="message-567878899359416326">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“He has to be in the circle, still,” I said.  “Or I wouldn’t still be here.  Apparently we can’t sense him until we’re awakened, which might explain why I couldn’t see him.  This guy’s spooky.”</div> thank fucking fuck</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567878987066638337" id="message-567878987066638337">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">but like also if <em>tools</em> were used in molly's murder.....<img alt="🤷" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f937.png" title="🤷"/></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567879556728619008" id="message-567879556728619008">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Not like that.  Like in Essentials, malignant Others are going to react to purifying substances and patterns, like salt and running water.  Fresh wood against dead things.”
+
+“Iron against things that are born from nature,” I said.</div> My english teacher and I were talking about this, but where did 'iron dispells demons' start? She was wondering because we came across it in NOTW and I was like "yeah that's totally a thing" but we couldn't really figure it out</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567879833040715811" id="message-567879833040715811">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Suleiman.  Sorcerer king.  He was the first practitioner who really worked for the betterment of mankind and actually made headway.  He established rules and contracts, and he systematically worked to challenge the biggest, baddest Others out there that he could, then used them to help get others.  It brought about an age where humans could stop being the playthings of Others and start developing as a civilization.”</div> I'm really interested in this whole world. How does one start associating with Others, without Others on your side?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567880036221321228" id="message-567880036221321228">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I mean I assume it's those people in stories who outsmart gods and demons and stuff, get them to agree and then trick the tricksters</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567880080710172673" id="message-567880080710172673">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I love those kindsa myths anyhow</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567880490216980490" id="message-567880490216980490">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">And then a third, bounding the others.  Seven circles.</div> seven is heaven, three is the magic number, and tree is the magic lumber, amen.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567880843855659018" id="message-567880843855659018">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Holly and holly berries,” Rose said, at the same time I said, “raw iron.”
+
+We exchanged glances.  I stood up and checked my book.
+
+“Why?” Rose asked.  “Mine says holly.”</div> Does the text of the book change for each person!??! That's the only reason I can think of that this would be a thing, I assumed mirrorverse copied perfectly</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567881111527751710" id="message-567881111527751710">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Her iron ore nuggets were tied the same way my holly was.</div> Did Molly have a mirror?!? Is Rose not the only one here?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567881131773657098" id="message-567881131773657098">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">What the fuuuuuuuuck</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567881375315918869" id="message-567881375315918869">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> could hear the faint sounds as she dropped individual berries in her bowl.  My nuggets made a clatter.</div><img alt="👂" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f442.png" title="👂"/></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567881507511992355" id="message-567881507511992355">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">A dagger.  An hourglass.  A dreamcatcher.  A small silver skull.  A coin.</div> this is the kinda stuff I tried to summon satan with too when I was ten.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567881611064901652" id="message-567881611064901652">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">don't ask. But also ten year old me would've whooped lucifer's ass</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567882045146267705" id="message-567882045146267705">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I felt the weight of them in my hand.  They weren’t my motorcycle keys, which would have been my first choice, but… they sort of fit.  Keys opened doors.  There was a freedom.  They represented ownership, protecting things, and the fact that my friend’s keys were on there…</div> Also in this case: responsibility, freedom, distance from your family. I like his choice here too</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567882511611461641" id="message-567882511611461641">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Clothes off.
+
+“One at a time, or both of us at once?”  Rose asked.
+
+I didn’t know.  But when I opened my mouth to say so, I felt myself leaning one way, and pushed myself the rest of the way.  “Both.”</div> figuring out whether Rose and Blake seeing each other naked is weird or not is already a more worthwhile pursuit than I gave it credit for, Ruben and Elliot!</span>
+<span class="chatlog__edited-timestamp" title="17-Apr-19 04:22 AM">(edited)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567882803400671278" id="message-567882803400671278">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Our voices faltered some as we stumbled here and there.  For the first four or five lines, one of us would reach the end before the other, pausing a fraction to let the other catch up.</div> I love this for what it represents about their relationship, about the step they're taking here</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567883502440153089" id="message-567883502440153089">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The dagger slid into place.
+
+There were no words in the book to recite.  I could have sworn they’d been there before.  The silence rang, heavy.
+
+“War,” I said, if only to keep the momentum going.
+
+I could hear Rose behind me, taking my cue.  “War.”
+
+The circle moved, giving me a sense of relief, and a view of the hourglass.
+
+“Time,” I said, in unison with Rose.  Something we didn’t have enough of, something dangerous, foremost in our thoughts, with its association to Laird.
+
+The dreamcatcher, a hoop with a network of threads within.
+
+“Dream,” I said.
+
+But Rose was speaking at the same time, and she said, “Fate.”
+
+The circle moved.  The little silver skull.  Deceptively small, no doubt valuable.  It glittered in the light.
+
+“Doom,” I said.
+
+“Death,” Rose said.
+
+The coin, an old one, from an era before coins had been pressed with exact images.
+
+“Fortune,” I said.
+
+“Ruin,” Rose said.
+
+The lifeless rose.
+
+“Family,” I said.
+
+“Myself,” Rose said.
+
+Then the personal token.</div> They're building their own magic systems!!! And they have to figure out everyone else's magic systems, and deal with the fact that their magic systems don't line up, and <em><strong>aaaaaaaaaaa this is so coool</strong></em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567884014820524063" id="message-567884014820524063">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“To everyone and everything that’s listening,” I said.  I heard Rose start speaking behind me, but my words drowned hers out.  “To me, and to nobody in particular, I’ve gotta say, I didn’t choose this.  I’m doing this for family, to respect them as they were in the past, when my cousins were also my friends, so the others don’t face what Molly did.  I’m doing it to respect stuff in the present, because even if I dislike my cousins, I don’t want them to have to face this situation and get killed off.  I’m doing this for the family that comes in the future, so my kids and all our descendants don’t have this debt hanging over our heads.  Above all, I think I’m doing this for my real family.  For the friends I made who gave me support when I needed it most, so I can demonstrate what they taught me.  Past, present, future, and… more abstract.”</div> "Attention, demon motherfuckers! I am here, I have no fear, Fuck you!"</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567884182936879136" id="message-567884182936879136">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">and of course, I love this! It's just a succinct little run down of all of these things that we already knew were blake's motivations and values</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567884428810911744" id="message-567884428810911744">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I thought for a second, and then I said, “And I’m doing it for me and Rose.  Because I won’t be trapped like this, and she shouldn’t be either.”</div> not sure if it's just cuz I wish I had a genderswapped mirror-twin, but I'm really glad to see them acknowledge that they care about each other</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567885159966441499" id="message-567885159966441499">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The lines were larger, more meaningful, and I could see further.  I could see the circles attached to each line, like planets in orbit around things I couldn’t make out.  A system all around me, that I was now a part of.
+
+I felt like Rose must feel all the time.  Being there, but not quite alive.  My body was only there because my sense of self required it.
+
+I opened my eyes, and I came back into my body.</div> You're a man looking at the world through a keyhole.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567885392611770379" id="message-567885392611770379">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I could see birds, flapping their wings, against my skin.  They moved, and the branches they were on bobbed lightly.  The watercolor background shifted.</div> I luv my birdboi, he's the second best birdboi ever (sorry, but you can't beat the codename chicken little)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567885817561743380" id="message-567885817561743380">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Practitioners fell into categories, depending on their focus.  Some carried on this route, learning ways to influence the world that were naturally in tune with their bodies and will.  Some practitioners manipulated spirits, getting them to obey or infusing them into objects.  There were some who dealt with Others.  Many cultures, a long, long history of arts being invented and refined, it made for a wealth of possibilities.</div> Yeah! You could be a sorcerer, wizard, bard, cleric, warlock</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567886299692924929" id="message-567886299692924929">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Her voice sounded like it was on the brink of breaking with emotion.  “Good night if I don’t run into you before you go to bed.  I’m going to take a bit to myself.”</div> Aw man I'd be pissed too...don't worry, you probably wouldn't've been that useful anywa- I mean, shit, no that's not what I meant</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567886598155272213" id="message-567886598155272213">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He was crawling out of the shears.  Out of the reflective surface, and into the middle of the circle.
+
+A brown-skinned man, his pale hair scraggly and long, inconsistent here and there, more baldness than hair.  He was old, wizened, with a potbelly, and spots all over his skin.</div> aaaaaaa no we <em>just</em> read all about how fucking scary this guy is <em>NOOOO</em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="567886825088352276" id="message-567886825088352276">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Okay well that, was disturbing but I got a podcast to listen to! Loved the chapter, love awakening in general, excited to explore what it means!</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">18-Apr-19 09:20 PM</span>
+<div class="chatlog__message" data-message-id="568501117403660310" id="message-568501117403660310">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Alright, gonna do our first Pact interlude since I've been <em>dying</em> to get back to this book.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568501398908567568" id="message-568501398908567568">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Bonds 1.x I guess? I dunno, parahumans has interludes which are pretty standard, twig has <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">enemy/lamb</span></span> which is a little less so, but still structured and cool</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568501425064247297" id="message-568501425064247297">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Pact has...</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568501443506601984" id="message-568501443506601984">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">OH SHIT</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568501532723511337" id="message-568501532723511337">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I remember seeing this as I looked through the table of contents ages ago</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568501740433833994" id="message-568501740433833994">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">So much of this book is about books with weird names and information im dying to know and knowledge as power that I should've seen this coming</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568502146333409287" id="message-568502146333409287">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Dear Diary
+
+I am supposed to start with dear diary but daddy is very strict about what I say and how.  Daddy said writing this diary would teach me to write better and that is very important but I have to write that at the top of every new part. </div> This is really efficient at giving us a relative age (or maturity level at least) for this speaker, meaning they (probably she cuz im assuming this is a former custodian) are a child and I already care about them</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568502401212874777" id="message-568502401212874777">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Daddy said he would never read my diary but if I did not write that part at the top for every new part then he would whup me.  I asked how he would know if he never read it and he said he would just know. I believe him.</div> Maybe ye times of olde had different practices</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568502610819153930" id="message-568502610819153930">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Maybe he's had a rough go of it</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568502619920924674" id="message-568502619920924674">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">maybe every fuckin thorburn since the beginning of time has been an abusive dickwad and passed the family tradition onto their kids</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568502851530260490" id="message-568502851530260490">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">WOw yeah screw this 'dad' guy</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503063380492319" id="message-568503063380492319">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">t was when I was playing with Pearl even though I was ixplicitly told I mustnt.  </div> wonder if this is just a typo that was never fixed or another way of hinting at time period?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503221606416394" id="message-568503221606416394">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">or just 'this person is yung and does not nou hau tooo spel</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503461176672267" id="message-568503461176672267">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">They started hitting me over and over and kept knocking me down and would not let me leave.</div> maybe that's why you were told not to play with her. Still, fuck pearl</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503572501889034" id="message-568503572501889034">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I should explain what happened the other time because you are my diary and you do not know anything except what I wrote here. </div> also thanks kid. As a diary, I appreciate it</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503807626182686" id="message-568503807626182686">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">WITH THIS BLOOD SHED I PAY YOU FURFUR.  EXACT MY REVENGE.</div> is furfur roomies with Barb?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568503888131653632" id="message-568503888131653632">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">also is she being bullied for being from the witch family?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568504120915394580" id="message-568504120915394580">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I love how...bad the writing is here</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568504569315983360" id="message-568504569315983360">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">like, it misspells certain words but it does it pretty consistantly, grammar and phrasing can be simple at best and wrong at worst, it doesn't use the right 'its', it's very humanizing and child-izing and character-izing and makes you feel such acute rage and sympathy for her awful, awful life</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568504976574513162" id="message-568504976574513162">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> He looked scary because he had that mean and angry look he has sometimes when he whups me and he was wearing the clothes from yesterday and he hadn’t shaved his face. </div> Okay I know I said fuck pearl and all but like holdup kids can be assholes and not <em>all</em> of them deserve horribly painful death via ghost Barber pls</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568505349288493106" id="message-568505349288493106">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He looked and sounded danjerous and so did she but in a diferent way.</div> hhhhhh this kid is so tragic and I just want her to be safe and not grow up to be an asshole...which is to say, a Thorburn</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568505778970034186" id="message-568505778970034186">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">he pulled out all this blond hair tied into a knot in the middle and he put it over his knee.</div> Uhhh daddy thorburn here doesn't look like he has much sympathy but he might just have Sympathy and that would be worse</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568505976274288640" id="message-568505976274288640">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> Even though Pearl and her family hit me with sticks I felt really bad because Pearl always loved her long hair.  Even when braided it was long enough to touch her bottom.  </div> I hope I can just say 'fuck you</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568505999862923293" id="message-568505999862923293">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">in peace</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568506103852171275" id="message-568506103852171275">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">and just hope that her hair is all that she paid for her shittiness</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568506497194000410" id="message-568506497194000410">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">It was only after that was over that daddy whupped me.  It was almost as bad as being hit with the sticks because I was already sore.  I peed pink after.  The peeing hurt and I would stamp and drum my feet on the stepstool in front of the loo to distract myself until daddy belowed for me to stop.</div> I have decided to name this guy julian for some reason...or like, martin, or something. ANyways, I have very rarely ever felt this much contempt for someone in a wildbow story before</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568506902661693460" id="message-568506902661693460">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I literally would rather have a friendly cup of tea with (ward)<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">Cradle and fucking <em>Paris</em></span></span> than spend twenty minutes with this asshole</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568507411862781972" id="message-568507411862781972">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He asked me why I needed to listen and I said if I was disobedient and did not listen then everyone would hurt me.  He said that was close enough.</div> Beating your kid teaches them lessons alright, lessons like 'if someone isn't listening you can hurt and threaten them enough so that they will' and 'everyone is out to get you so responding with pure self preservation is always justified'</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568507713772847104" id="message-568507713772847104">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I did not think it made sense that someone my age could plan a trick like that and plan ahead to have people waiting in the shed like Pearl did.</div>Kids are dicks, and little miss thorburn here is so innocent and confused and it's taking an emotional toll on me</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568508090023018496" id="message-568508090023018496">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Me: kids are dicks, they're the worst
+Anyone: look a kid
+Me: Protect them at all costs, they are precious and have done nothing wrong, I love them forever</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568508168716550156" id="message-568508168716550156">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">also you can replace kids with cats in all those sentences and it works</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568508406416146452" id="message-568508406416146452">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">  In daylight I cannot cry or show weakness.  He held me and he stroked my hair until I started to fall asleep and I felt safer.  I cryed myself to sleep and I felt better.</div> aww that's nice.....for a Fucin Asshole that is</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568508724222623765" id="message-568508724222623765">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Daddy had me pick a special object to me and sit naked in a circle while I read from a book.</div> I was still trying to figure out what reality was when I was at this-ish age</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568509062619201563" id="message-568509062619201563">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">scary movies, or just regular movies with one or two scary things in them, would conjure demons in my closet and basilisks around every corner. Why would you awaken someone like this!?!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568509368065327104" id="message-568509368065327104">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I am not allowed to make friends if they belong to certain families and I am not allowed to make friends if they are already friends with someone from one of those families</div> Well, they probably were told not to make friends with you either, if the Thorburn Family Reputation is a constant</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568509520524083245" id="message-568509520524083245">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">But there are things that aren’t my age or my daddy’s age or even the age of the house that want to be my friend now.  Tricky things and scary things and things that offer me gifts like Pearl offered me the toy before she took me to the shed</div> see this is why that was a bad idea</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568509901224017923" id="message-568509901224017923">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">if blake being awakened and having to make Adult Decisions is a metaphor for choosing things like college, making decisions about money, etc. Then little miss Thorburn could make those kinds of choices as a 4-7 year old!?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568510069142978601" id="message-568510069142978601">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Rose Thorburn</div>drat. YOU MADE ME LIKE AND SYMPATHIZE WITH HER WHAT THE FUuuuuuuUUUUCk</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568510129427841025" id="message-568510129427841025">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">okay that's all I have time for for now, I'll finish the chapter later today</span>
+</div>
+</div>
+<div class="chatlog__reactions">
+<div class="chatlog__reaction">
+<img alt="🙋" class="emoji emoji--small" src="https://twemoji.maxcdn.com/2/72x72/1f64b.png" title="🙋"/>
+<span class="chatlog__reaction-count">1</span>
+</div>
+<div class="chatlog__reaction">
+<img alt="Ilovethis" class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/402832974560886794.png" title="Ilovethis"/>
+<span class="chatlog__reaction-count">3</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">19-Apr-19 02:17 AM</span>
+<div class="chatlog__message" data-message-id="568575864132861958" id="message-568575864132861958">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I usually love all the hateable characters right out of the gate so this happens somewhat less frequently for me, but as soon as I saw the name it all clicked and I realized what had happened</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568575979631673344" id="message-568575979631673344">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Alright, it's time for me to start....continuing the chapter I had to pause in the middle of!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568576838759088171" id="message-568576838759088171">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">March 9th, 1932</div> my exhaustively close read of the chapter somehow failed to notice that we get dates</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568576936146763778" id="message-568576936146763778">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">just scrolled back up to check and this is a little over a year later</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568577180305719301" id="message-568577180305719301">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Arsepint lives up to his name.  The dirty rotten bastard.</div> hahahahahahahahaha if I never get a single detail on the sleeper but we get to meet arsepaint I may die at peace</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568577927034175493" id="message-568577927034175493">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I asked him how to win a victory and he took me to the library and helped me pick out books.</div> Every father should spend some quality time with their child, teach them all you abusivepieceofshit wisdom, like riding bikes, fingerpainting, outsmarting goblins, chess</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">19-Apr-19 02:37 AM</span>
+<div class="chatlog__message" data-message-id="568580994660302850" id="message-568580994660302850">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">also I love the evolution of language; one of the things I've always appreciated about Wildbow's work --ever since his books inspired me to spend every spare second writing in the first place-- is how he turns a chapter or interlude or portion of a chapter into a challenging exercise for himself. His objective is, of course, to tell us a good story; it's also to challenge himself, and I think the diversity of writing that that creates <em>does</em> make his stories more enjoyable. 
+
+9/10 of my favorite moments in his stories are the ones where he's clearly pushing himself, whether it's to write characters with neuroses he doesn't experience himself,  characters in social minorities, (twig) <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">Primordials, a character created by Sylvester's psyche with only a tenuous tie to a potential real person, a morally articulate plant-boi, <em>Helen</em></span></span> (ward) <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">the main character but evil, a morally good sociopath, difficult-to-classify characters like chris, the fucking <em>SHARDS</em>, etc.</span></span> or a steadily evolving writing technique and character voice that has to remain consistent but different by a <em>very</em> specific amount, it's simply incredible</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568581193793142815" id="message-568581193793142815">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Yo, so now that I've written another of Jay's Appreciation Appraisals, imma read</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568581603970777098" id="message-568581603970777098">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> I asked and daddy said that being good at books is not always about reading a lot but its sometimes about knowing where to start looking.</div> such wisdom, this is a very thoughtful <strong>fucking douche</strong></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568581877644918789" id="message-568581877644918789">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">June 18th, 1932</div> Less of a timeskip this time, just a couple months. Wonder if I can notice writing style changes</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568583207109525514" id="message-568583207109525514">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He gave me a pat on the head and told me to go read some more, so I would know good ways to use Arsepint.</div> I'm beginning to see how Rose turned out the way she did: cold, calculating, ruthless, manipulative...makes me worried for Blake, even if he's got more of a sense of self and values than Rose did when she was gettin into all this shit</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568583456171491330" id="message-568583456171491330">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">September 15th, 1939</div> Who says Wildbow doesn't timeskip?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568583500190449712" id="message-568583500190449712">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">okay, so seven years later</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568583727173730304" id="message-568583727173730304">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I guessed Rose was around 4-7yo in 1931, im leaning more towards the 7 side though, which would make her 14 here. We'll call it a 12-15 range</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568584029956341770" id="message-568584029956341770">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Dear Diary,
+
+I am in a bind.  I am so sorry I ignored you these past two weeks, dear diary, but much has been going on.</div> she's <em>certainly</em> evolved her writing style here</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568584333858832436" id="message-568584333858832436">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">They put me in a private school so I could learn more useful languages.  It is a very religious school. </div> huh. I guess when she suggested making a deal with anOther to learn a language quickly she was speaking from experience-- she knows <em>exactly</em> how much work it is.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568584571172683777" id="message-568584571172683777">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">There’s something witty I’m supposed to say about that but I’m too upset.</div> when this liveread inevitably gets to a part in the book that just fuckin <em>devestates</em> me</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568584760125816833" id="message-568584760125816833">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> I would explore the school and meet the goblins and ghosts in the darkest corners, but they watch us like hawks watch mice.</div> rudimentary but accurate similes!!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568584885153824789" id="message-568584885153824789">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">it's rare that wbow actually writes <em>as a character</em> rather than as a character, but he always fuckin nails it</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568585009716396046" id="message-568585009716396046">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">im thinking PHO chapters, this....Lord of Loss</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568585225333112863" id="message-568585225333112863">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">  I’ve been so on guard against trickster spirits and goblins, I’ve forgotten to keep my guard up around other humans.  </div> she dealt so much with Others that she forgot to not be an asshole</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568585504715571210" id="message-568585504715571210">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I thought I had it settled when I threatened and spelled the girls who took and handed over the book, ensured that nobody knew it was them or me.</div> she dealt so....</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568585844349337613" id="message-568585844349337613">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I need the book back, but I have only a few tricks at my disposal, and no creatures of any worth that I might bargain with.  Ancient ghosts with little power left, and lesser spirits.</div> I do wonder what happens after you die, and what the ghostmakin rules be. I mean it's typically spun as unfinished business, but that's also a bit cliche so im sure there'd be some Pactlike catch to it</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568586052659314708" id="message-568586052659314708">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Some religious grounds are benign but others are dangerous. </div> guess it would depend on whether your religion is right or not</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568586387050463243" id="message-568586387050463243">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">also I wonder if like, Dionysus is a real Other, or at least if there was an Other worshiped as Dionysus, for example.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568586821844467717" id="message-568586821844467717">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">were zeus and thor the same dude? what about Fairies and Ifrit, or Prometheus and Jack o Lantern. I don't read much urban fantasy-- most of what I read takes place in a completely separate world</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568586867901988885" id="message-568586867901988885">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">but I like thinking about it!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568587080272183307" id="message-568587080272183307">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The faculty keeps saying they want goodness and success to come out of this dark time, and they will see the subject of this book as a dark thing.</div> history is a dick to devil-consortors</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568587636055474176" id="message-568587636055474176">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">just found out that the new teacher my school hired is named Jonathan Faust and I thought it would be appropriate to share that here</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568587803278049280" id="message-568587803278049280">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> I wonder if being hated may well be better than being a nobody.</div> thanks for making that unilateral decision for all your grandkids</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568587858571689984" id="message-568587858571689984">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Oh shit five days later</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568588152198004746" id="message-568588152198004746">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">With a measure of help, I slipped into a cat’s body to spy on the new owners of the book.  With learned tricks, I joined the shadows in slipping beneath the door.</div> I wonder just how capable practitioners can become, and how fast</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568588344838324224" id="message-568588344838324224">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">They were doing things that proper boys and girls shouldn’t do until marriage.  Herb with one of Minnie’s friends and Minnie with one of Herb’s friends, and another two friends pairing up nearby.</div> how old are these kids!?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568588466170888203" id="message-568588466170888203">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">My father has an eye for justice, or an eye for a lack of it.</div> <em>clearly</em></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568588697935806476" id="message-568588697935806476">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">now I have a greater merchant spirit turned mortal turned god breathing down my neck.</div> what the fuck are Lords and why are they the coolest things ever?!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568588980912783372" id="message-568588980912783372">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I have to confront the mundane humans, and I must do it while feeling as if they are somehow more distorted and unfamiliar than many of the beings I read about in my books.</div> An this is how it be, she's just got a different morality system than the rest of us really</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568589056821297192" id="message-568589056821297192">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">she just <em>seems</em> like a "rancid cunt" to us uninitiated</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568589097283747840" id="message-568589097283747840">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">five days again</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568589280348340225" id="message-568589280348340225">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I tried, but I couldn’t secure the book before they had a chance to use it.  They called a goblin to them, and the ritual gave it power to attack.  Minnie suffered the brunt of it, and the rest of us were caught.</div> How easy is it to do this shit?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568589386908827669" id="message-568589386908827669">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">also: I confess I might have summoned a demon for funsies at 14</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568589419339186177" id="message-568589419339186177">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">like hypothetically</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568590112854638602" id="message-568590112854638602">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I told him the truth.  That I was given the responsibility too soon.  Other families don’t let children have powers.  I’m sixteen, but I’ve had powers for almost half of my life.</div> Yo, that's a good call. Maybe less curious kids would suffer fates worse than death then</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568590347475746837" id="message-568590347475746837">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">And then I swore.  I swore I wouldn’t ever make my children go through this.  I would let them lead lives untouched by all of this.</div> I guess that's...actually sort of a mercy? But you didn't say shit about your grandkids, so did you really solve anything?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568590856916041749" id="message-568590856916041749">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I look at him now, lying still beside me, and I think maybe Aimon was just as scared and frustrated as I was.  A different kind of fear and frustration, but it was there.</div> I only wish you spent your time reading wildbow books instead of books about summoning demons</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568590966303227924" id="message-568590966303227924">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">With a gun to his head, he refused to say uncle.  To relent in the simplest, smallest way.  I think that was when I realized we were the same.  There was only us.</div> Oh?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568591242410328064" id="message-568591242410328064">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He kissed me, and I kissed him back.
+
+Things went to natural places from there.</div> You don't just fuck people you almost killed three seconds ago <em>Rose</em>! That said, <img alt="♠" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/2660.png" title="♠"/></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568591445024440320" id="message-568591445024440320">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">When I’m writing, dear Diary, I sometimes like to think that you’re communicating with me, when my thoughts clarify and I can jump to new ideas.</div> hey, me too!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568591713313226772" id="message-568591713313226772">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Wow, that was one <em>hell</em> of a chapter. Two or three hells, probably. I don't know when I'll read more, but until then!</span>
+</div>
+</div>
+<div class="chatlog__reactions">
+<div class="chatlog__reaction">
+<img alt="👋" class="emoji emoji--small" src="https://twemoji.maxcdn.com/2/72x72/1f44b.png" title="👋"/>
+<span class="chatlog__reaction-count">3</span>
+</div>
+<div class="chatlog__reaction">
+<img alt="Ilovethis" class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/402832974560886794.png" title="Ilovethis"/>
+<span class="chatlog__reaction-count">2</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">19-Apr-19 05:19 PM</span>
+<div class="chatlog__message" data-message-id="568802922847010826" id="message-568802922847010826">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Awww guys!!!<img alt="💛" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f49b.png" title="💛"/> <img alt="💛" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f49b.png" title="💛"/> <img alt="bulba" class="emoji" src="https://cdn.discordapp.com/emojis/356879968552353802.png" title="bulba"/> <img alt="💛" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f49b.png" title="💛"/></span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568803282248663041" id="message-568803282248663041">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I think I'm just about to start....arc 2/16. Sweet Scion, it's been a week. When I was a week into Worm I think I was almost at leviathan...?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568803608112660484" id="message-568803608112660484">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I guess I'm just reading better! Or y'know, pausing to type out everything I'm thinking or something</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568803873586806812" id="message-568803873586806812">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Damages 2.1</div> Interesting. Wildbow arc names are usually all-encompassing in meaning, so I'll be watching out for that this time</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568804147197902879" id="message-568804147197902879">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The pen scribbled across the paper.</div> yup! a to do list is always a productive way to get your life in order. 
+Step 1: make the to do list</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568804580842799105" id="message-568804580842799105">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> Different Others had different drawbacks and weaknesses.  Ideally I’d be able to pick up an assortment of weapons in a variety of materials.  The problem was, I wasn’t sure where I could get those things.</div> Can you ever <em>really</em> be prepared for Others? Don'tcha wish they were like humans/KKCFae and all had an aversion to sharp objects/ iron respectively</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568804750137622541" id="message-568804750137622541">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">That raised several more questions.  I needed a better way to get information.  Internet.  I needed a way to buy supplies, if my cash reserve ran out.  Money.</div> if pact was written in 2019: Ancient Magical Entities vs Amazon Drone</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568805190514245632" id="message-568805190514245632">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight"> I hesitated, then added other points.  Joel’s car and keys, which I had borrowed, needed to be returned, if they weren’t already.  Rose needed assistance.  I needed allies.</div> Idk if I should be all like: 'priorities dude u cant put joel's car as a need stay alive or whatever' but I just can't; Blake's dedication to paying his dues/his friends is admirable.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568805745504681985" id="message-568805745504681985">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The mirror beside me was empty.  My reflection was absent, as was Rose’s. </div> Okay I was wondering about that; so even when rose is gone he doesn't have a reflection, meaning that it's kinda like Rose Sr. took his reflection and genderbent it and gave her agency. Also now Blake's a vampire cuz he doesn't have a reflection oooooooooooooo.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568806147990093834" id="message-568806147990093834">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">actually what if Vampires in this book totally have reflections but their reflections just fucked off somewhere else and aren't listening to them anymore? I know you can lose your body, mind, heart, soul, and several more esoteric ones. I've made reference to the metaphysical property of your "asshattery" but also maybe you have a Reflection!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568806286947254293" id="message-568806286947254293">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Guys what if Rose has to fight a bunch of Vampire reflections untethered to the non-mirror-realm!??!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568806350340096031" id="message-568806350340096031">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">ahem. Back to reading</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568806641781309446" id="message-568806641781309446">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">But Molly had made a long series of messes in packing up grandmother’s things, leaving the job half done, and her things were still here, untouched.  Navigating between furniture and over the boxes and piles of books made me constantly aware of the space around me.
+
+When I had some time, I could do some tidying up.  For the time being, though, I had too much to do.  I settled for a breather.</div> I somehow doubt many wildbow protagonists have the opportunity to clean their rooms while the story is happening</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568806860803670027" id="message-568806860803670027">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">With my newly acquired second sight, I could make out the spirits that infused everything.  </div> I've been waiting to see how Awakened see things!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568807189196701698" id="message-568807189196701698">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">One object as simple as a pencil could have a host of spirits inside it, representations of the purposes the object had, its nature, its elemental makeup, ownership, and many, many other qualities.</div> Luv luv luv this! Reminds me of Spren from Stormlight a little, but obviously more complicated.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568807247061450762" id="message-568807247061450762">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">YO</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568807285833334785" id="message-568807285833334785">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I just REALized</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568807472614342667" id="message-568807472614342667">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Theme of wildbow's stories: symbolism is a thing that people create, not a quality that the universe has</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568808122353713153" id="message-568808122353713153">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Every time we use symbolism and metaphors in a wildbow story, it's because the <em>character</em> is doing that. (ward) <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text">Cradle's Glasses</span></span> aren't the <em>book's</em> symbols, they're <span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"><span class="spoiler-text"><em>Cradle's</em></span></span>. Even powers, with their metaphorical relation to the trigger event, draw upon the <em>characters</em> to create that metaphor. Each metaphysical system is unique, and the creativity that creates it all comes from the characters</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568808151457988627" id="message-568808151457988627">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">which brings us to Pact</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568808634306527252" id="message-568808634306527252">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">A lot of other magic systems would say that "the chemical and elemental makeup of the pencil is the truest part of it, and the part you can exploit with <em>cool magics</em>, Harry!", but not Pact. I said that what DIP called the 'word association game' was the characters creating their own magic system, their own rules for how objects metaphoricaly relate to concepts, and I think the book keeps telling me im right</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568808847406399498" id="message-568808847406399498">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">It's not any one thing, there isn't any one governing <em>system</em>, you derive and see the system that you use depending on the person you are</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568809323417960478" id="message-568809323417960478">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I'd argue it's one of the fundamental things that make wildbow's work "realistic". His worlds, fantasy-filled as they are, have a system of World for each character, just like the real world does. It's just that in <em>his</em> books, the interactions between those WorldViews are brutal cape fights instead of not-so-friendly arguments</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568809482579214337" id="message-568809482579214337">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">This has been Jay's Appreciation Appraisal, I'll get back to reading shortly</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568809638473105410" id="message-568809638473105410">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Also who knows which Appreciation Appraisals will turn into fun video essays later!?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568809881776422934" id="message-568809881776422934">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Shamans, then, were practitioners who worked more or less exclusively with spirits.  They would be able to find and interact with more powerful spirits.  Not simply the spirit of one particular stone, but the spirit of all stones for an area.</div> And Kvothe spoke the Name of the Wind, and then the Wind asked him for one and a half cupped hands of flayed skin</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="568810134843817994" id="message-568810134843817994">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I shut off the sight.
+
+The scene I saw without magical aid was an ordinary one, a simple snowfall, with clouds in the proper places.  </div> Yo you can <em>do</em> that!? Cool, I thought you were just Wise to the Whatthefuckian Plane now</span>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="postamble">
+<div class="postamble__entry">Exported 36,303 message(s)</div>
+</div>
+</body>
+</html>
