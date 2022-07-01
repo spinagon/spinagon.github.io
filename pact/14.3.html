@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Doof! Media - pact_livereads</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width" name="viewport"/>
+<style>
+        /* General */
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: Whitney;
+    src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+    font-weight: 700;
+}
+
+body {
+    font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img {
+    object-fit: contain;
+}
+
+.markdown {
+    max-width: 100%;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+.preserve-whitespace {
+    white-space: pre-wrap;
+}
+
+.spoiler {
+    /* width: fit-content; */
+    display: inline-block;
+    /* This is more consistent across browsers, the old attribute worked well under Chrome but not FireFox. */
+}
+
+.spoiler--hidden {
+    cursor: pointer;
+}
+
+.spoiler-text {
+    border-radius: 3px;
+}
+
+.spoiler--hidden .spoiler-text {
+    color: rgba(0, 0, 0, 0);
+}
+
+.spoiler--hidden .spoiler-text::selection {
+    color: rgba(0, 0, 0, 0);
+}
+
+.spoiler-image {
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.spoiler--hidden .spoiler-image {
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.spoiler--hidden .spoiler-image * {
+    filter: blur(44px);
+}
+
+.spoiler--hidden .spoiler-image:after {
+    content: "SPOILER";
+    color: #dcddde;
+    background-color: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    padding: 100%;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    font-size: 0.9em;
+}
+
+.spoiler--hidden:hover .spoiler-image:after {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.quote {
+    margin: 0.1em 0;
+    padding-left: 0.6em;
+    border-left: 4px solid;
+    border-radius: 3px;
+}
+
+.pre {
+    font-family: "Consolas", "Courier New", Courier, monospace;
+}
+
+.pre--multiline {
+    margin-top: 0.25em;
+    padding: 0.5em;
+    border: 2px solid;
+    border-radius: 5px;
+}
+
+.pre--inline {
+    padding: 2px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.mention {
+    border-radius: 3px;
+    padding: 0 2px;
+    color: #7289da;
+    background: rgba(114, 137, 218, .1);
+    font-weight: 500;
+}
+
+.emoji {
+    width: 1.25em;
+    height: 1.25em;
+    margin: 0 0.06em;
+    vertical-align: -0.4em;
+}
+
+.emoji--small {
+    width: 1em;
+    height: 1em;
+}
+
+.emoji--large {
+    width: 2.8em;
+    height: 2.8em;
+}
+
+/* Preamble */
+
+.preamble {
+    display: grid;
+    margin: 0 0.3em 0.6em 0.3em;
+    max-width: 100%;
+    grid-template-columns: auto 1fr;
+}
+
+.preamble__guild-icon-container {
+    grid-column: 1;
+}
+
+.preamble__guild-icon {
+    max-width: 88px;
+    max-height: 88px;
+}
+
+.preamble__entries-container {
+    grid-column: 2;
+    margin-left: 0.6em;
+}
+
+.preamble__entry {
+    font-size: 1.4em;
+}
+
+.preamble__entry--small {
+    font-size: 1em;
+}
+
+/* Chatlog */
+
+.chatlog {
+    max-width: 100%;
+}
+
+.chatlog__message-group {
+    display: grid;
+    margin: 0 0.6em;
+    padding: 0.9em 0;
+    border-top: 1px solid;
+    grid-template-columns: auto 1fr;
+}
+
+.chatlog__reference-symbol {
+    grid-column: 1;
+    border-style: solid;
+    border-width: 2px 0 0 2px;
+    border-radius: 8px 0 0 0;
+    margin-left: 16px;
+    margin-top: 8px;
+}
+
+.chatlog__reference {
+    display: flex;
+    grid-column: 2;
+    margin-left: 1.2em;
+    margin-bottom: 0.25em;
+    font-size: 0.875em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    align-items: center;
+}
+
+.chatlog__reference-avatar {
+    border-radius: 50%;
+    height: 16px;
+    width: 16px;
+    margin-right: 0.25em;
+}
+
+.chatlog__reference-name {
+    margin-right: 0.25em;
+    font-weight: 600;
+}
+
+.chatlog__reference-link {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chatlog__reference-link:hover {
+    text-decoration: none;
+}
+
+.chatlog__reference-content > * {
+    display: inline;
+}
+
+.chatlog__reference-edited-timestamp {
+    margin-left: 0.25em;
+    font-size: 0.8em;
+}
+
+.chatlog__author-avatar-container {
+    grid-column: 1;
+    width: 40px;
+    height: 40px;
+}
+
+.chatlog__author-avatar {
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+}
+
+.chatlog__messages {
+    grid-column: 2;
+    margin-left: 1.2em;
+    min-width: 50%;
+}
+
+.chatlog__author-name {
+    font-weight: 500;
+}
+
+.chatlog__timestamp {
+    margin-left: 0.3em;
+    font-size: 0.75em;
+}
+
+.chatlog__message {
+    padding: 0.1em 0.3em;
+    margin: 0 -0.3em;
+    background-color: transparent;
+    transition: background-color 1s ease;
+}
+
+.chatlog__content {
+    font-size: 0.95em;
+    word-wrap: break-word;
+}
+
+.chatlog__edited-timestamp {
+    margin-left: 0.15em;
+    font-size: 0.8em;
+}
+
+.chatlog__attachment {
+    margin-top: 0.3em;
+}
+
+.chatlog__attachment-thumbnail {
+    vertical-align: top;
+    max-width: 45vw;
+    max-height: 500px;
+    border-radius: 3px;
+}
+
+.chatlog__attachment-container {
+    height: 40px;
+    width: 100%;
+    max-width: 520px;
+    padding: 10px;
+    border: 1px solid;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.chatlog__attachment-icon {
+    float: left;
+    height: 100%;
+    margin-right: 10px;
+}
+
+.chatlog__attachment-icon > .a {
+    fill: #f4f5fb;
+    d: path("M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z");
+}
+
+.chatlog__attachment-icon > .b {
+    fill: #7789c4;
+    d: path("M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z");
+}
+
+.chatlog__attachment-icon > .c {
+    fill: #f4f5fb;
+    d: path("M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z");
+}
+
+.chatlog__attachment-icon > .d {
+    fill: #7789c4;
+    d: path("M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z");
+}
+
+.chatlog__attachment-filesize {
+    color: #72767d;
+    font-size: 12px;
+}
+
+.chatlog__attachment-filename {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chatlog__embed {
+    display: flex;
+    margin-top: 0.3em;
+    max-width: 520px;
+}
+
+.chatlog__embed-color-pill {
+    flex-shrink: 0;
+    width: 0.25em;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.chatlog__embed-content-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em 0.6em;
+    border: 1px solid;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.chatlog__embed-content {
+    display: flex;
+    width: 100%;
+}
+
+.chatlog__embed-text {
+    flex: 1;
+}
+
+.chatlog__embed-author {
+    display: flex;
+    margin-bottom: 0.3em;
+    align-items: center;
+}
+
+.chatlog__embed-author-icon {
+    margin-right: 0.5em;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.chatlog__embed-author-name {
+    font-size: 0.875em;
+    font-weight: 600;
+}
+
+.chatlog__embed-title {
+    margin-bottom: 0.2em;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+
+.chatlog__embed-description {
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+.chatlog__embed-fields {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.chatlog__embed-field {
+    flex: 0;
+    min-width: 100%;
+    max-width: 506px;
+    padding-top: 0.6em;
+    font-size: 0.875em;
+}
+
+.chatlog__embed-field--inline {
+    flex: 1;
+    flex-basis: auto;
+    min-width: 150px;
+}
+
+.chatlog__embed-field-name {
+    margin-bottom: 0.2em;
+    font-weight: 600;
+}
+
+.chatlog__embed-field-value {
+    font-weight: 500;
+}
+
+.chatlog__embed-thumbnail {
+    flex: 0;
+    margin-left: 1.2em;
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 3px;
+}
+
+.chatlog__embed-image-container {
+    margin-top: 0.6em;
+}
+
+.chatlog__embed-image {
+    max-width: 500px;
+    max-height: 400px;
+    border-radius: 3px;
+}
+
+.chatlog__embed-footer {
+    margin-top: 0.6em;
+}
+
+.chatlog__embed-footer-icon {
+    margin-right: 0.2em;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.chatlog__embed-footer-text {
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+.chatlog__reactions {
+    display: flex;
+}
+
+.chatlog__reaction {
+    display: flex;
+    align-items: center;
+    margin: 0.35em 0.1em 0.1em 0.1em;
+    padding: 0.2em 0.35em;
+    border-radius: 3px;
+}
+
+.chatlog__reaction-count {
+    min-width: 9px;
+    margin-left: 0.35em;
+    font-size: 0.875em;
+}
+
+.chatlog__bot-tag {
+    position: relative;
+    top: -.2em;
+    margin-left: 0.3em;
+    padding: 0.05em 0.3em;
+    border-radius: 3px;
+    vertical-align: middle;
+    line-height: 1.3;
+    background: #7289da;
+    color: #ffffff;
+    font-size: 0.625em;
+    font-weight: 500;
+}
+
+/* Postamble */
+
+.postamble {
+    margin: 1.4em 0.3em 0.6em 0.3em;
+    padding: 1em;
+    border-top: 1px solid;
+}
+    </style>
+<style>
+        /* General */
+
+body {
+    background-color: #36393e;
+    color: #dcddde;
+}
+
+a {
+    color: #0096cf;
+}
+
+.spoiler-text {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.spoiler--hidden .spoiler-text {
+    background-color: #202225;
+}
+
+.spoiler--hidden:hover .spoiler-text {
+    background-color: rgba(32, 34, 37, 0.8);
+}
+
+.quote {
+    border-color: #4f545c;
+}
+
+.pre {
+    background-color: #2f3136 !important;
+}
+
+.pre--multiline {
+    border-color: #282b30 !important;
+    color: #b9bbbe !important;
+}
+
+/* === Preamble === */
+
+.preamble__entry {
+    color: #ffffff;
+}
+
+/* Chatlog */
+
+.chatlog__message-group {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.chatlog__reference-symbol {
+    border-color: #4f545c;
+}
+
+.chatlog__reference {
+    color: #b5b6b8;
+}
+
+.chatlog__reference-link {
+    color: #b5b6b8;
+}
+
+.chatlog__reference-link:hover {
+    color: #ffffff;
+}
+
+.chatlog__reference-edited-timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__author-name {
+    color: #ffffff;
+}
+
+.chatlog__timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__message--highlighted {
+    background-color: rgba(114, 137, 218, 0.2) !important;
+}
+
+.chatlog__message--pinned {
+    background-color: rgba(249, 168, 37, 0.05);
+}
+
+.chatlog__attachment-container {
+    background-color: #2f3136;
+    border-color: #292b2f;
+}
+
+.chatlog__edited-timestamp {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.chatlog__embed-color-pill--default {
+    background-color: rgba(79, 84, 92, 1);
+}
+
+.chatlog__embed-content-container {
+    background-color: rgba(46, 48, 54, 0.3);
+    border-color: rgba(46, 48, 54, 0.6);
+}
+
+.chatlog__embed-author-name {
+    color: #ffffff;
+}
+
+.chatlog__embed-author-name-link {
+    color: #ffffff;
+}
+
+.chatlog__embed-title {
+    color: #ffffff;
+}
+
+.chatlog__embed-description {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__embed-field-name {
+    color: #ffffff;
+}
+
+.chatlog__embed-field-value {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__embed-footer {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chatlog__reaction {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chatlog__reaction-count {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Postamble */
+
+.postamble {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.postamble__entry {
+    color: #ffffff;
+}
+    </style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+<script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler--hidden');
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="preamble">
+<div class="preamble__guild-icon-container">
+<img alt="Guild icon" class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/352800639396347935/d9de0209eacab281ef47429ddb542243.png"/>
+</div>
+<div class="preamble__entries-container">
+<div class="preamble__entry">Doof! Media</div>
+<div class="preamble__entry">Live Reads / pact_livereads</div>
+</div>
+</div>
+<div class="chatlog"><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">04-Aug-20 09:01 PM</span>
+<div class="chatlog__message" data-message-id="740268205075071006" id="message-740268205075071006">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">To be clear, that's one of my own universes that I write stories in, not talking about pact goblins and fae- in fact, in that universe it's not a dichotomy at all, they're pretty unrelated. But the idea being that there's this childlike wonder associated with the fae that I wanted to expand upon. The fae of olde are wondrous, self-obsessed, mischievous, unaware of the customs and order of mortals, and kind of- by virtue of their imaginations -in charge of the reality that they perceive, in a way that you can't directly affect and usually just have to go along with. Just like kids! I actually came up with the universe after working at an art camp with 5-11 year olds, and just watching all of these monsters run around trying to impress each other. The pact-relevant point being that it's an equally valid (if not as fleshed out) way to take the idea of the fae. Pact also leans away from their natural-world associations, which something like D&amp;D leans <em>into</em>- see, my aesthetic has always been sort of fae-adjacent so I'm perpetually interested and engaged with their various interpretations in media. There're a lot of comparisons to be made across the stuff I read/watch/play.</span>
+</div>
+</div>
+<div class="chatlog__reactions">
+<div class="chatlog__reaction">
+<img alt="Ilovethis" class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/402832974560886794.png" title="Ilovethis"/>
+<span class="chatlog__reaction-count">2</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740268448302760056" id="message-740268448302760056">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">With that said, onto 14.3!<div class="pre pre--multiline nohighlight">“Oh man,” Evan said.  “Is that a dragon!?  That was fire in its mouth.”
+
+“That was a dragon,” our satyr said.  “It disappeared.”</div>time to see how oh-so-wrong about all of this I was! Good to see it confirmed as a dragon and not some kind of dragon-like being so that all my analysis only maybe goes to waste!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740268926386044938" id="message-740268926386044938">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“They aren’t like they are in the video games,” Tiff said.  “Generally speaking, you don’t deal with dragons.  For one thing, they barely exist anymore, for another…”</div>Well <em>that's</em> fascinating. So they can't really represent something that's increased in existence since the days of olde (meaning xenophobia and rampant nationalism are out as possibilities hhhhhhh). So now I don't know <em>what</em> my guess is exactly.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740269372848734249" id="message-740269372848734249">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The satyr, Green Eyes, and the maenad turned to look in the same direction at once.  I didn’t bother to check.  I just moved, which meant I reacted only a fraction of a second after they did.</div>Good thinking- interesting that Green Eyes reacts to the dragon's presence while Blake doesn't. We've speculated that he has a kind of super-sense for abyss-related things, but that doesn't seem to apply here- it's possible Green Eyes only reacts because of how used to being prey she is, and the Abyss-sense has little or nothing to do with it. We just get Blake's inhuman quickness in reaction, which has also been a thing.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740269946587578528" id="message-740269946587578528">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I’d expected something sleek.  The silhouette I could make out suggested something like a bear in stature, more like a small building in raw mass.  Broad, thick in build, and draped in looser scaly hide, with enough obvious muscle that my initial thoughts about its ability to fly were banished.  Its eyes glowed, not like Green Eyes’ eyes did, but as if lit with an intensity of their own.  The heat rising off of it pushed away the snowflakes that were frozen in the air.</div>So it <em>can</em> fly, or it can't!? Also, this is just a wonderful description. I'm also still under the impression that this thing is smart enough to have made a deal with Johannes itself, rather than relying on some intermediary.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740270524705275925" id="message-740270524705275925">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Like thin tendrils of drool, an ignited fluid, molten metal or magma was escaping the corners of the dragon’s mouth.
+
+It drew its head back, almost until it didn’t have a neck.
+
+“Shit!” Peter shouted.</div>Only in a wildbow story does a firebreathing dragon feel this wonderfully unique</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740270773171912716" id="message-740270773171912716">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">There was only the inferno.
+
+I was on fire.  One arm, part of my chest.  Burning surprisingly well.</div>You are made of <em>dry wood,</em> my dude</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740271245240696932" id="message-740271245240696932">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">One of the four walls surrounding me was sky, I realized, as smoke cleared, and I struggled to get to my feet, to stagger toward that sky despite the lack of appropriate ground underfoot, the way my leg somehow wasn’t moving fast enough, and the way the overly bright flames seemed to claw everything back in the opposite direction, sections of brick wall, glass…
+
+Like the pull of a star.</div>It <em>was</em> compared to the Astrologer's creations, and humanity has long seen dragons in the stars...I'm not sure what any of this means yet but it's nothing I've seen before and I'm here for it</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">04-Aug-20 09:48 PM</span>
+<div class="chatlog__message" data-message-id="740279985742282752" id="message-740279985742282752">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">How eerie, to not be afraid, in the midst of all this.  To not be terrified, my face screwed up in panic like Tiff and Roxanne’s were.  Like the maenad’s face was, even.  I was still disoriented, still trying to deal with the world having been one thing in one moment, and holocaust and ruin in the next.</div>That <em>is</em> a bit uncomfortable, yes- also, sorry, got momentarily distracted but I'm back.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740280775500496997" id="message-740280775500496997">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Extinguish rune isn’t working…” Tiff said.
+
+“Shit.  What the fuck did you drag us into?”  Peter.  “What the fuck?  Where is it?”
+
+“…I didn’t think it would, but I don’t know what else I could do.”</div>And resistant to rune magic somehow- in a predictable way, if Tiff was expecting it. It could be a pure power-level thing, to where they can't supply enough power to the spirits to counteract whatever this effect is- it could also be something else, but considering that shaman magic is almost the most basic kind, I'm going with the first option</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740280907562352730" id="message-740280907562352730">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Don’t get burned!”  Tiff said.  “Dragonstuff is potent.  I don’t think that fire ever goes out!”</div>Ah. Well that's fucking terrifying.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740280996695638042" id="message-740280996695638042">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">That explains why they've jumped to amputation rather than trying to put it out</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740281021601415238" id="message-740281021601415238">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">does it burn underwater?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740282644557725697" id="message-740282644557725697">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“It’s airborne, somewhere not too far away,” the satyr was saying, eyes skyward. “The dragon is.”</div>That's a definite <em>can</em> for flying</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740282862837825627" id="message-740282862837825627">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Help Green Eyes,” I said.  “Help her now, or I’ll fight you every step of-”
+
+“Don’t finish that sentence,” she cut me off.  “Or I’ll leave you to burn with her.”</div>People under magical truth can really be a bitch to deal with, can't they?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740283133458382858" id="message-740283133458382858">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">Tiff spoke my thoughts, “That’s not a guarantee, especially for a weaker bogeymen.  When we summoned her in the bathtub-”
+
+“Uh huh,” the maenad said.
+
+“There’s no guarantee the fire will go out if she passes on.  With dragon’s breath, it could burn her spirit, even.”</div>Aaaaaaaaaaaaaaaa that is <em>not</em> a comfortable thought- or situation, honestly.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740283314539200654" id="message-740283314539200654">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">What did Johannes do to get access to <em>this</em> thing's service!? What would it want? to terrorize the vestige of the countryside?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740283558807076934" id="message-740283558807076934">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He didn’t manage to stop me from seeing the maenad put the tip of the shovel against the center of Green Eyes’ forehead.  There was no handle to go with it.  It was only a rigid bit of metal, now.</div>AAAAaAAAA NOOO</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740283683973496864" id="message-740283683973496864">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The maenad stooped down, and cut the hair and fin away, as if to be safe.  It didn’t matter.  The tail wasn’t moving.
+
+“Aw,” Evan said.  “Awww, and eww, but mostly aww.  Crumbs.”</div>Should I be disturbed that that's Evan's reaction to this!? Probably!?</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740284079072870440" id="message-740284079072870440">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Ow,” Green Eyes murmured, as she saw me.  “Oh wow, ow.”
+
+My eyes widened a bit.</div>Oh thank the spirits she's alright...ish. Maybe.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740284398246559815" id="message-740284398246559815">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“My face, and my eye,” I heard Green Eyes murmuring.  Not to me.  To the faceless woman, ironically enough. “It wasn’t a very good face, but-”
+
+I saw the faceless woman reach down.  I didn’t want to say anything, out of concern that a moment’s spite could make the faceless woman do worse.
+
+But she didn’t use her ability to knit flesh.
+
+She helped Green Eyes reposition, and I saw how Green Eyes’ hair had been combed down in front of one side of her face.  A curtain of hair so pale it was almost transparent.</div>Awwww, that's so sweet! She didn't even use her face-knitting horror monster abilities, she's just a fashionista. I'm here for this unlikely (or perhaps likely) friendship.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740285332645347448" id="message-740285332645347448">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Dragons are… they’re sometimes called snags, or recursive loops, or um, shoot, can’t remember the word.”
+
+“Problems,” Peter said.  “Problematic.”
+
+“Um.  Sure.  Most are.  Some think dragons are what happens when something feeds into itself.  Every dragon is different, and some are more elemental, or mostly elemental, or spirit, or deific.  Something like a lesser god that worships itself, or an elemental that takes in more than it puts out.  They happen only when the stars align right, and attempts to produce them tends to turn out…”</div>Oh this is <em>fascinating</em> and I'm kind of here for it actually- it's <em>very</em> different from my interpretation pre-read, but it's such an awesome take on the pure phenomena of dragons. Plus, it essentially lets each one be unique, to represent the wide variety of takes on them in fiction (and to give wildbow the opportunity to make more unique monsters because he likes doing that)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740286215219314720" id="message-740286215219314720">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“It went wrong.  So they’re rare and they’re unique and they tend to be feral, not always reptilian, but there’s something to be said for memory and the world remembering the dinosaurs or whatever, so it’s more common, as a given snarl needs to find a reference point, but-”</div>it's so wonderful- I sort of doubt the dinosaurs explanation, since I don't think that's exactly how the magic system works, but the dinosaurs thing might be how it works now that we know about dinosaurs and incorporate them into the mythos of the planet, so to speak. I'm working on what I think dragons represent and I have some ideas I'm pretty confident about, but I'll get more into that when I've got it more scaled out.</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">04-Aug-20 10:22 PM</span>
+<div class="chatlog__message" data-message-id="740288490968973312" id="message-740288490968973312">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“There’s no polar opposite.  Most are amalgams of elemental and spirit and animal and nightmares, on top of whatever else.  You have to beat them at their own game.  You get the dragons that are all poison, to the point that one drop of venom can clear out a lake.  Then you have to just out-poison them.  You get the dragons in some areas of the East that are more spirit and elemental, like dragons of the mountains and… it’s like you have to destroy a mountain by hitting it with a bigger mountain.”
+
+“How do you-” I started.  “Nevermind.  You’re saying the only way to kill ol’ firebreath there is hotter fire?”
+
+“No,” she said.  Her voice dropped to be even quieter, as we approached the end of the street.  “There’s another way.  Most are violent, killing machines.  So… if you’re brave enough, you can try the conventional means.  Facing them in battle.  Eventually someone succeeds.  Usually with the backing of some major power.  Usually a god.  Which makes them rare.”
+
+“We totally have a god,” Evan said, “don’t we?”</div>and the idea that there's no opposite- that you <em>have</em> to use like-with-like if you want to get anywhere, or just take it down with pure force, is <em>wonderful</em>. I'm glad that this still takes on the flavor of all the myths I looked into for my interpretation, even if I was- not quite <em>dead</em> wrong, but not <em>correct</em> either. It makes mechanical sense for these kinds of things to have been running around throughout all the myths- and I think once you look a little deeper it makes pretty solid <em>metaphorical</em> sense too...<img alt="👀" class="emoji" src="https://twemoji.maxcdn.com/2/72x72/1f440.png" title="👀"/>
+I also have to wonder- I think Evan's talking about Dionysus here, and it would make sense. I don't know off the top of my head if he's ever helped with killing a dragon, but the greek gods in general <em>certainly</em> have. However, jacob's bell <em>does</em> seem to have another up-and-coming god who might be able to lend a hand...</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740288592311615608" id="message-740288592311615608">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Fuck,” I said.  “What about giants?”
+
+“A hell of a lot simpler,” Tiff said.  “Um.  Secluded.  Big.”
+
+“Basically,” the satyr said.</div>Neat. Giants are Big. I was right, case closed.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740289216906395859" id="message-740289216906395859">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“They’re endangered,” the maenad told me.  “Can’t breed, no gods old or rough-edged enough still around to make more.  Except maybe where you’re from, but any that crop up there still aren’t going to be adventurous enough to move.  Everyone knows it isn’t right to touch a giant.  Or they should know.”</div>Interesting...so they're going the 'very old, first people' route here, which is fascinating. I'm not sure if we're gonna get any more, but this on its own confirms a couple of the things I was thinking about, while broadening or dismissing others. The protection by karma and by 'everyone' is especially strange, considering that there are almost as many myths about slaying <em>giants</em> as there are about <em>dragons,</em> especially in the Abrahamic mythos.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740289653726511105" id="message-740289653726511105">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“Johannes has them because he offers a sanctuary,” the maenad said.  “Just like our High Priest does for us, his followers, except Johannes does it for anything that’s willing to play by the rules.  The giants have enemies, just like they have advocates, and even if the advocates vastly outnumber the enemies, there’s people who come after them, and Johannes gives them one more hiding spot, just like this.  The dragon, that’s different.”</div>just friendly, philanthropic johannes, offering a reserve for poor endangered species.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740290031456878663" id="message-740290031456878663">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">He remained where he was, bent over, one hand still on the truck.
+
+I couldn’t make out his face.  Only the back of him, one leg, and a kilt of what looked to be cow hides, threaded into a continuous garment with thongs as thick around as my remaining arm.</div>Definitely a european giant too, possibly even with greek tones- wait no that's sheep. Probably not nordic.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740290140068511886" id="message-740290140068511886">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I saw his leg tense.
+
+“Balls,” Peter said.
+
+“I don’t see-” Evan started.
+
+“Go!”  I said.</div>That joke was....low hanging</span>
+</div>
+</div>
+<div class="chatlog__reactions">
+<div class="chatlog__reaction">
+<img alt="lol" class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/413392575567757324.png" title="lol"/>
+<span class="chatlog__reaction-count">1</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740290169759989823" id="message-740290169759989823">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">(I did laugh at it)</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740290664482471957" id="message-740290664482471957">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">The dragon reappeared.  Perching on a rooftop, a matter of meters from the giant.
+
+The giant reached up, and dug thick fingers into the dragon’s loose-fitting hide.
+
+“That explains that,” I said.  “The dragon’s master.”
+
+“Almost obvious in retrospect,” Peter said.</div>Yeah you know that makes a good amount of sense. And kind of lends to the idea that giants command forces of nature beyond the capabilities of humanity. Unfortunately that means that you can't exactly deal with the dragon without targetting an endangered magical species (kind of two endangered magical species')</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740290954992287815" id="message-740290954992287815">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">“I need wood,” I said, as the flames embraced the parked car.  “I need a body.”
+
+“I would love for you to have a body,” Peter said.  “Would love for me to have a body when all of this is over, too.  My priority, as it happens.  No offense.”</div>Peter is such a dick, but so likeable in this sequence of everything going to shit; I havent' pulled all of his "everything in the practice is a problem" lines yet but I've been tempted just for their comedic value (and truthfulness).</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740291540785823865" id="message-740291540785823865">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><div class="pre pre--multiline nohighlight">I thought of the vision the abyss had given me.  A view of my possible future.
+
+I thought of how the dragon had flown.
+
+Not arms.  Wings.
+
+I set to building.</div>I don't know how exactly to feel about this, because currently there's just a kid screaming in the back of my head about how fucking awesome it's going to be that our protagonist has dragon/bird wings and I'm having trouble getting them to be quiet long enough to think about the consequences</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740291741877272670" id="message-740291741877272670">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Excellent chapter, I might be back to read another one later today (and possibly give my spiel on dragons/what I think they represent in the grand social metaphor that is pact's magic system)</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">05-Aug-20 12:59 AM</span>
+<div class="chatlog__message" data-message-id="740328154748420227" id="message-740328154748420227">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Heya! I'm back to give a quick little spiel on <em>dragons</em>. Might be a bit further-fetched than some of the other stuff I've come up with but sometimes I think that until I really start talking about it and then through the course of the argument I convince myself; maybe that'll happen this time!</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740328182376431638" id="message-740328182376431638">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">So this befuddled me for a bit there, because the description we were given didn't really fit the idea of fear that I'd isolated as a commonality amongst western dragons. But! The detail about dragons being <em>uncommon</em> nowadays made everything click into place. Throughout this book we've been talking about sort of pre-Seal methods of practicing, and how the Seal took the idea that practice and non-practice are seperate, and drilled it into the universe's reality. But during the course of conquering the entire world and affixing it to its Abrahamic capitalist ideologies, it had to run up against versions of the Practice that weren't structured like it.</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740328224000704603" id="message-740328224000704603">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">You know how when you start to think about how two magic systems from two entirely different sets of media would interact and you get into one of those loops of "well if this character had access to this and could do <em>this</em> with it then she'd just get <strong>Infinite Power</strong> and nobody would be able to stop her"? My theory is that that can happen when cultures with different belief systems rub up against each other: wild, dangerous, uncontrolled magic that kind of breaks both of the systems it results from. If your system has a bunch of rules in place that prevent that sort of thing from happening, but the other system is built on a different foundation and those rules don't exist for it, then you can get a dragon. This would be why they're so different and unique: because each of them represents a different kind of breakdown in social contact and cohesion. 
+This, surprisingly, <em>kind of fits</em> the ideas of xenophobia and <em>fearing one's enemies</em> that I was working with pre-chapter: people personify and fear the unknown, the parts of their adversaries that they see as monstrous (especially if they're on the wrong side of Solomon's Seal and need to be conquered).</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740328269811023965" id="message-740328269811023965">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">The reason, then, that dragons are so endangered is because of the uniformity of the Seal and its unequivocal takeover of the Practice. Now that the world is operating more by a single set of rules, there aren't nearly as many opportunities for the 'glitch between the systems' nature of dragons to arise.</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">05-Aug-20 01:01 AM</span>
+<div class="chatlog__message" data-message-id="740328554243555449" id="message-740328554243555449">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">And the world is all the less cooler for it</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/183520036235771904/ebb23e823cc8835c6430ed33aae17a3e.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="183520036235771904" style="color: rgb(0,119,187)" title="spinagon#3988">spinagon</span>
+<span class="chatlog__timestamp">05-Aug-20 01:01 AM</span>
+<div class="chatlog__message" data-message-id="740328609474019400" id="message-740328609474019400">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">But more intact</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">05-Aug-20 01:02 AM</span>
+<div class="chatlog__message" data-message-id="740328949246197791" id="message-740328949246197791">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">True, but that also means that the slaying of a dragon is kind of akin to "I will overcome this cultural difference by punching it in the face. You're all christian now. Deal with it, Ohlone Tribe"</span>
+</div>
+</div>
+</div>
+<div class="chatlog__message" data-message-id="740329280764117033" id="message-740329280764117033">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace"><s>The Seal of Solomon has a pretty colonialist bent and that's kind of a major problem with it, even if it's convenient to have everyone speaking the same language</s></span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">12-Aug-20 10:05 PM</span>
+<div class="chatlog__message" data-message-id="743183410687901776" id="message-743183410687901776">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">Heya Elliot! I've missed having you around for the 'reads!</span>
+</div>
+</div>
+</div>
+</div>
+</div><div class="chatlog__message-group">
+<div class="chatlog__author-avatar-container">
+<img alt="Avatar" class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/325480568307449867/c92844bc3553910eac6a0cbbc93b8dc9.png"/>
+</div>
+<div class="chatlog__messages">
+<span class="chatlog__author-name" data-user-id="325480568307449867" style="color: rgb(238,221,136)" title="Symanic#3764">JayManiac</span>
+<span class="chatlog__timestamp">12-Aug-20 10:18 PM</span>
+<div class="chatlog__message" data-message-id="743186730743496766" id="message-743186730743496766">
+<div class="chatlog__content">
+<div class="markdown">
+<span class="preserve-whitespace">I've got somewhere to be in about two hours, but maybe we can knock out 14.4 before then- I've been a bit busy for a few days and I've missed the chance to read (not to mention that I now have a quota to maintain if I want to catch up to Pale). When last we left off, Blake was taking some artistic inspiration from a dragon and also his vision of being a ruthless all-consuming bogeyman in the Drains! I mean he always <em>was</em> a fan of winging it, I suppose<div class="pre pre--multiline nohighlight">I’d committed to walking the line between human and Other.  If I felt like wings were somehow more of an appeal to my human side, despite all conflicting evidence, was that a bad sign?</div>Maybe? I think the Abyss is less picky than all that, if it makes sense. The Abyss sees the bird spirits and tree spirits within you, and finds it easy to <em>work with</em> those to channel power through you, rather than work against them. Things that appeal to your human self will be wound up with what the Abyss has in store for you whatever you do- it's just going to use giving you those things, to further its own essence. I think it's possible for blake to become more <em>blake</em> without becoming more human. And also, symbolism and surface level things are important, and it's just the flat-out truth that a human-looking body is kind of a little bit more human than a body with wings. Other-ness exaggerates a part of 'human' that fits with you and the power you identify yourself to, so...that seems pretty textbook for what Blake is doing.</span>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="postamble">
+<div class="postamble__entry">Exported 36,303 message(s)</div>
+</div>
+</body>
+</html>
