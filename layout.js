@@ -82,6 +82,6 @@ window.onload = () => {
     const input = document.getElementById("input");
     const output = document.getElementById("output");
     input.oninput = () => {
-        output.innerHTML = input.value.replace(/./g, translate);
+        output.value = input.value.replace(/./g, translate);
 }
 }
