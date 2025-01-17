@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expanding Particle Circle</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let circles = [];
+        let isPressed = false;
+        let spawnInterval;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function getRandomColor() {
+            return `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+        }
+
+        class ParticleCircle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 0;
+                this.particles = [];
+                this.speed = 5;
+                this.alpha = 1;
+                this.particleCount = 50;
+                this.color = getRandomColor();
+
+                for(let i = 0; i < this.particleCount; i++) {
+                    const angle = (i / this.particleCount) * Math.PI * 2;
+                    const velocityMagnitude = 2;
+                    this.particles.push({
+                        angle: angle,
+                        x: x + Math.cos(angle) * this.radius,
+                        y: y + Math.sin(angle) * this.radius,
+                        velocityX: Math.cos(angle) * velocityMagnitude,
+                        velocityY: Math.sin(angle) * velocityMagnitude
+                    });
+                }
+            }
+
+            update() {
+                this.radius += this.speed;
+                this.alpha *= 0.995;
+
+                this.particles.forEach(particle => {
+                    particle.x += particle.velocityX;
+                    particle.y += particle.velocityY;
+
+                    if(particle.x >= canvas.width) {
+                        particle.x = canvas.width - 1;
+                        particle.velocityX = -particle.velocityX;
+                    }
+                    if(particle.x <= 0) {
+                        particle.x = 1;
+                        particle.velocityX = -particle.velocityX;
+                    }
+                    if(particle.y >= canvas.height) {
+                        particle.y = canvas.height - 1;
+                        particle.velocityY = -particle.velocityY;
+                    }
+                    if(particle.y <= 0) {
+                        particle.y = 1;
+                        particle.velocityY = -particle.velocityY;
+                    }
+                });
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                this.particles.forEach(particle => {
+                    ctx.fillStyle = this.color.replace('rgb', 'rgba').replace(')', `,${this.alpha})`);
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            isDead() {
+                return this.alpha < 0.01;
+            }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            circles.push(new ParticleCircle(e.clientX, e.clientY));
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            isPressed = true;
+            circles.push(new ParticleCircle(e.clientX, e.clientY));
+            spawnInterval = setInterval(() => {
+                circles.push(new ParticleCircle(e.clientX, e.clientY));
+            }, 100);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isPressed) {
+                circles.push(new ParticleCircle(e.clientX, e.clientY));
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isPressed = false;
+            clearInterval(spawnInterval);
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isPressed = false;
+            clearInterval(spawnInterval);
+        });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            circles = circles.filter(circle => !circle.isDead());
+            circles.forEach(circle => {
+                circle.update();
+                circle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
