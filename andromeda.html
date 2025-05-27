@@ -79,11 +79,13 @@
         </div>
 
         <p class="note">
-            This page estimates the current distance to Andromeda based on an initial distance
-            of <strong>2.537 million light-years</strong> and an approach velocity of
-            <strong>110 km/s</strong> relative to the Milky Way.
-            The values update in "real-time" based on these constants.
+            This page estimates the current distance to Andromeda.
+            The calculation is based on a reference distance of
+            <strong><span id="refDistLy"></span> million light-years</strong>
+            as of <strong><span id="refDate"></span></strong>,
+            and an approach velocity of <strong>110 km/s</strong> relative to the Milky Way.
             <br><br>
+            The values update in "real-time" based on these constants.
             The collision is predicted in about 4.5 billion years.
         </p>
         <p class="note">
@@ -92,49 +94,73 @@
     </div>
 
     <script>
-        // Constants
-        const INITIAL_DISTANCE_LIGHT_YEARS = 2.537e6; // 2.537 million light-years
-        const APPROACH_VELOCITY_KM_PER_S = 110;    // 110 km/s
-        const KM_PER_LIGHT_YEAR = 9.4607304725808e12; // km in one light-year (IAU 2015 definition)
-        const SECONDS_PER_YEAR = 31557600; // (365.25 days per year)
+        // --- Constants ---
+        // Reference date and time (UTC) when the initial distance was considered accurate
+        // Example: January 1st, 2023, at 00:00:00 UTC
+        const REFERENCE_DATE_STRING = "2023-01-01T00:00:00Z";
+        const REFERENCE_DISTANCE_LIGHT_YEARS = 2537000n; // 2.537 million light-years (at REFERENCE_DATE_STRING)
 
-        // Calculate initial distance in kilometers
-        const initialDistanceKm = INITIAL_DISTANCE_LIGHT_YEARS * KM_PER_LIGHT_YEAR;
+        const APPROACH_VELOCITY_KM_PER_S = 110n;    // 110 km/s
+        const KM_PER_LIGHT_YEAR = 9460730472580n; // km in one light-year (IAU 2015 definition)
+        // const SECONDS_PER_YEAR = 31557600; // (365.25 days per year) - not directly used in this calculation path
 
-        // Get the time this script started, as our reference t=0
-        const startTimeMs = Date.now();
+        // --- Derived Constants ---
+        // Calculate reference distance in kilometers
+        const referenceDistanceKm = REFERENCE_DISTANCE_LIGHT_YEARS * KM_PER_LIGHT_YEAR;
+        // Get the reference time in milliseconds since epoch
+        const referenceTimeMs = new Date(REFERENCE_DATE_STRING).getTime();
 
-        // DOM Elements
+        // --- DOM Elements ---
         const distanceLyElement = document.getElementById('distanceLyDisplay');
         const distanceKmElement = document.getElementById('distanceKmDisplay');
+        const refDistLyElement = document.getElementById('refDistLy');
+        const refDateElement = document.getElementById('refDate');
 
-        function formatNumber(num) {
+        // --- Helper Functions ---
+        function formatNumber(num, fractionDigits = 2) {
             // Adds commas for thousands separators
-            return num.toLocaleString('en-US', { maximumFractionDigits: 8 });
+            return num.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
         }
 
         function updateDistance() {
             const currentTimeMs = Date.now();
-            const elapsedSeconds = (currentTimeMs - startTimeMs) / 1000;
 
-            // Calculate how much closer Andromeda has become in kilometers
+            // Calculate elapsed seconds since the REFERENCE_DATE
+            // If referenceTimeMs is in the future, elapsedSeconds would be negative.
+            // We assume referenceTimeMs is in the past.
+            const elapsedSeconds = BigInt(Math.round((currentTimeMs - referenceTimeMs) / 1000));
+
+            // Calculate how much closer Andromeda has become in kilometers since REFERENCE_DATE
             const distanceReducedKm = APPROACH_VELOCITY_KM_PER_S * elapsedSeconds;
 
             // Calculate current distance
-            const currentDistanceKm = initialDistanceKm - distanceReducedKm;
+            const currentDistanceKm = referenceDistanceKm - distanceReducedKm;
             const currentDistanceLy = currentDistanceKm / KM_PER_LIGHT_YEAR;
 
             // Update the HTML
-            // Using toFixed for light-years to show subtle changes, toLocaleString for km for readability
-            distanceLyElement.innerHTML = `${currentDistanceLy.toFixed(8)} <span class="distance-unit">light-years</span>`;
-            distanceKmElement.innerHTML = `${formatNumber(currentDistanceKm)} <span class="distance-unit">kilometers</span>`;
+            distanceLyElement.innerHTML = `${currentDistanceLy} <span class="distance-unit">light-years</span>`;
+            distanceKmElement.innerHTML = `${formatNumber(currentDistanceKm, 0)} <span class="distance-unit">kilometers</span>`;
         }
 
-        // Initial call to display distance immediately
-        updateDistance();
+        // --- Initialization ---
+        function initializePage() {
+            // Display reference information
+            refDistLyElement.textContent = (Number(REFERENCE_DISTANCE_LIGHT_YEARS) / 1e6);
+            const refDateObj = new Date(REFERENCE_DATE_STRING);
+            refDateElement.textContent = refDateObj.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+            }) + " UTC";
 
-        // Update the distance every second
-        setInterval(updateDistance, 1000);
+
+            // Initial call to display distance immediately
+            updateDistance();
+
+            // Update the distance every second
+            setInterval(updateDistance, 1000);
+        }
+
+        // Start the process
+        initializePage();
     </script>
 </body>
 </html>
