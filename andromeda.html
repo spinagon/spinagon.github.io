@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distance to Andromeda Galaxy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e; /* Deep space blue */
+            color: #e0e0e0; /* Light gray for text */
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #2a2a3e; /* Slightly lighter blue */
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0, 200, 255, 0.2);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+        }
+        h1 {
+            color: #00c8ff; /* Bright cyan */
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .distance-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #f7b733; /* Andromeda gold/yellow */
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #1e1e2f;
+            border-radius: 8px;
+            min-width: 350px; /* Ensure it doesn't jump around too much */
+            border: 1px dashed #f7b733;
+        }
+        .distance-unit {
+            font-size: 0.7em;
+            color: #aaa;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 25px;
+        }
+        a {
+            color: #00c8ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Distance to Andromeda Galaxy (M31)</h1>
+
+        <p>Andromeda is our nearest major galactic neighbor.</p>
+
+        <div id="distanceLyDisplay" class="distance-display">
+            Calculating... <span class="distance-unit">light-years</span>
+        </div>
+        <div id="distanceKmDisplay" class="distance-display">
+            Calculating... <span class="distance-unit">kilometers</span>
+        </div>
+
+        <p class="note">
+            This page estimates the current distance to Andromeda based on an initial distance
+            of <strong>2.537 million light-years</strong> and an approach velocity of
+            <strong>110 km/s</strong> relative to the Milky Way.
+            The values update in "real-time" based on these constants.
+            <br><br>
+            The collision is predicted in about 4.5 billion years.
+        </p>
+        <p class="note">
+            Source for constants (approximate): <a href="https://en.wikipedia.org/wiki/Andromeda_Galaxy" target="_blank" rel="noopener noreferrer">Wikipedia</a>
+        </p>
+    </div>
+
+    <script>
+        // Constants
+        const INITIAL_DISTANCE_LIGHT_YEARS = 2.537e6; // 2.537 million light-years
+        const APPROACH_VELOCITY_KM_PER_S = 110;    // 110 km/s
+        const KM_PER_LIGHT_YEAR = 9.4607304725808e12; // km in one light-year (IAU 2015 definition)
+        const SECONDS_PER_YEAR = 31557600; // (365.25 days per year)
+
+        // Calculate initial distance in kilometers
+        const initialDistanceKm = INITIAL_DISTANCE_LIGHT_YEARS * KM_PER_LIGHT_YEAR;
+
+        // Get the time this script started, as our reference t=0
+        const startTimeMs = Date.now();
+
+        // DOM Elements
+        const distanceLyElement = document.getElementById('distanceLyDisplay');
+        const distanceKmElement = document.getElementById('distanceKmDisplay');
+
+        function formatNumber(num) {
+            // Adds commas for thousands separators
+            return num.toLocaleString('en-US', { maximumFractionDigits: 8 });
+        }
+
+        function updateDistance() {
+            const currentTimeMs = Date.now();
+            const elapsedSeconds = (currentTimeMs - startTimeMs) / 1000;
+
+            // Calculate how much closer Andromeda has become in kilometers
+            const distanceReducedKm = APPROACH_VELOCITY_KM_PER_S * elapsedSeconds;
+
+            // Calculate current distance
+            const currentDistanceKm = initialDistanceKm - distanceReducedKm;
+            const currentDistanceLy = currentDistanceKm / KM_PER_LIGHT_YEAR;
+
+            // Update the HTML
+            // Using toFixed for light-years to show subtle changes, toLocaleString for km for readability
+            distanceLyElement.innerHTML = `${currentDistanceLy.toFixed(8)} <span class="distance-unit">light-years</span>`;
+            distanceKmElement.innerHTML = `${formatNumber(currentDistanceKm)} <span class="distance-unit">kilometers</span>`;
+        }
+
+        // Initial call to display distance immediately
+        updateDistance();
+
+        // Update the distance every second
+        setInterval(updateDistance, 1000);
+    </script>
+</body>
+</html>
