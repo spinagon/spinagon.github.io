@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Protein Hydrolysis Sim</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        canvas { border: 2px solid #555; border-radius: 8px; background: #000; cursor: crosshair; }
+        .controls { margin: 20px; text-align: center; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #ff4757; border: none; color: white; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Gelatin Hydrolysis Simulation</h2>
+    <p>Click the button to add "NaOH" (white particles) and watch the gel bonds break.</p>
+    <div class="controls">
+        <button onclick="addBase()">Add Sodium Hydroxide</button>
+    </div>
+    <canvas id="simCanvas" width="600" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let baseParticles = [];
+
+        // Initialize "Firm Jello" Grid
+        function init() {
+            particles = [];
+            baseParticles = [];
+            for (let x = 200; x < 400; x += 15) {
+                for (let y = 150; y < 300; y += 15) {
+                    particles.push({
+                        x: x, y: y, 
+                        origX: x, origY: y,
+                        vx: 0, vy: 0,
+                        status: 'firm' // 'firm' or 'liquid'
+                    });
+                }
+            }
+        }
+
+        function addBase() {
+            for(let i=0; i<30; i++) {
+                baseParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: 0,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: Math.random() * 3 + 2
+                });
+            }
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update Base (NaOH)
+            baseParticles.forEach((b, index) => {
+                b.x += b.vx;
+                b.y += b.vy;
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Check collision with Jello
+                particles.forEach(p => {
+                    let dx = p.x - b.x;
+                    let dy = p.y - b.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 15) {
+                        p.status = 'liquid';
+                    }
+                });
+            });
+
+            // Update Jello Particles
+            particles.forEach(p => {
+                if (p.status === 'liquid') {
+                    p.vy += 0.2; // Gravity
+                    p.x += (Math.random() - 0.5) * 2;
+                }
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Simple floor collision
+                if (p.y > canvas.height - 5) {
+                    p.y = canvas.height - 5;
+                    p.vy *= -0.2;
+                }
+
+                ctx.fillStyle = p.status === 'firm' ? '#ff4757' : '#ff7f50';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.status === 'firm' ? 4 : 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        init();
+        update();
+    </script>
+</body>
+</html>
