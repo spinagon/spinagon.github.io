@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECTOR-7: OUTPOST DELTA // 1998 ISOMETRIC DIORAMA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+    :root {
+      --bg-dark: #0a0b0d;
+      --bezel-dark: #1a1c21;
+      --bezel-mid: #2c3038;
+      --bezel-light: #454b57;
+      --rust-border: #6e3e26;
+      --amber: #ffb000;
+      --amber-dim: #996a00;
+      --amber-bright: #ffd24d;
+      --green-rad: #4af626;
+      --green-dim: #1d6e0c;
+      --crt-glow: rgba(74, 246, 38, 0.25);
+      --terminal-text: #50fa7b;
+      --panel-bg: #111418;
+      --font-mono: 'Share Tech Mono', monospace, 'Courier New';
+      --font-retro: 'VT323', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #b8c0cc;
+      font-family: var(--font-mono);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Vintage Riveted Industrial Casing */
+    #chassis {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at 50% 30%, #1e2229, #0d0f13 90%);
+      border: 8px solid #232730;
+      box-shadow: inset 0 0 15px #000, 0 0 30px rgba(0,0,0,0.8);
+      position: relative;
+    }
+
+    /* Rivets in chassis corners and borders */
+    .rivet {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle at 35% 35%, #7a8394, #2a2d36 70%);
+      border-radius: 50%;
+      border: 1px solid #111;
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.8), inset -1px -1px 2px #111;
+      z-index: 100;
+    }
+    .rivet.top-left { top: 4px; left: 4px; }
+    .rivet.top-right { top: 4px; right: 4px; }
+    .rivet.bottom-left { bottom: 4px; left: 4px; }
+    .rivet.bottom-right { bottom: 4px; right: 4px; }
+
+    /* Top Military Header */
+    #top-bar {
+      height: 48px;
+      background: linear-gradient(180deg, #323842 0%, #1e2229 60%, #14171d 100%);
+      border-bottom: 3px solid #0f1114;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      box-shadow: inset 0 1px 0 #525a69, 0 3px 6px rgba(0,0,0,0.6);
+      z-index: 20;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      text-shadow: 0 0 8px rgba(255,176,0,0.5);
+      font-weight: bold;
+    }
+
+    .hazard-stripe {
+      width: 44px;
+      height: 18px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #f5c942,
+        #f5c942 6px,
+        #1c1a16 6px,
+        #1c1a16 12px
+      );
+      border: 1px solid #000;
+    }
+
+    .controls-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Chunky 1998 Push Buttons */
+    .btn-chunky {
+      background: linear-gradient(180deg, #47505d 0%, #292e38 50%, #1c2027 100%);
+      border: 2px solid #5a6475;
+      border-right-color: #121418;
+      border-bottom-color: #121418;
+      color: #d1d8e3;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: inset 1px 1px 0 #6e798c, 1px 2px 3px rgba(0,0,0,0.6);
+      text-transform: uppercase;
+      transition: all 0.05s ease;
+    }
+    .btn-chunky:hover {
+      background: linear-gradient(180deg, #535e6e 0%, #353b47 50%, #232730 100%);
+      color: #fff;
+    }
+    .btn-chunky:active, .btn-chunky.active {
+      border-color: #121418;
+      border-right-color: #5a6475;
+      border-bottom-color: #5a6475;
+      box-shadow: inset 1px 2px 4px rgba(0,0,0,0.8);
+      background: #181b21;
+      color: var(--amber);
+    }
+    .btn-chunky.active-green {
+      color: var(--green-rad);
+      text-shadow: 0 0 6px var(--green-rad);
+    }
+
+    /* Main Viewport Container */
+    #viewport-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #0d0f12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+    #viewport-container.panning {
+      cursor: grabbing;
+    }
+
+    canvas#diorama-canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* CRT Scanline & Phosphor Overlay */
+    #crt-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 15;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      box-shadow: inset 0 0 100px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.9);
+      opacity: 0.85;
+      transition: opacity 0.3s ease;
+    }
+    #crt-overlay.disabled {
+      opacity: 0;
+    }
+
+    /* HUD Bottom Deck - 1998 Fallout Pip-Boy Interface */
+    #bottom-deck {
+      height: 175px;
+      background: linear-gradient(180deg, #242932 0%, #171a20 40%, #0f1115 100%);
+      border-top: 4px solid #3c4452;
+      box-shadow: inset 0 2px 0 #586377, 0 -4px 12px rgba(0,0,0,0.8);
+      display: grid;
+      grid-template-columns: 280px 1fr 340px;
+      padding: 10px 14px;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    /* CRT Screen Module */
+    .crt-screen {
+      background: #061108;
+      border: 3px solid #14171d;
+      border-radius: 4px;
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.95), inset 0 0 6px rgba(74,246,38,0.2), 0 2px 4px rgba(0,0,0,0.7);
+      padding: 8px 10px;
+      font-family: var(--font-retro);
+      font-size: 18px;
+      line-height: 1.25;
+      color: var(--green-rad);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .crt-screen::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px);
+      pointer-events: none;
+    }
+
+    .crt-screen .screen-title {
+      font-size: 14px;
+      font-family: var(--font-mono);
+      color: var(--green-dim);
+      border-bottom: 1px dashed var(--green-dim);
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Geiger Counter Meter */
+    .geiger-module {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .geiger-meter-bar {
+      height: 14px;
+      background: #09170b;
+      border: 1px solid var(--green-dim);
+      display: flex;
+      overflow: hidden;
+      gap: 2px;
+      padding: 1px;
+    }
+    .meter-pip {
+      flex: 1;
+      height: 100%;
+      background: #113615;
+      transition: background 0.1s;
+    }
+    .meter-pip.lit-green { background: #4af626; box-shadow: 0 0 4px #4af626; }
+    .meter-pip.lit-amber { background: #ffb000; box-shadow: 0 0 4px #ffb000; }
+    .meter-pip.lit-red   { background: #ff3333; box-shadow: 0 0 4px #ff3333; }
+
+    /* Center Action Deck */
+    .center-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .inspect-log-box {
+      flex: 1;
+      background: #0c0e12;
+      border: 2px solid #282e38;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #9ab;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+    .inspect-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--amber);
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #232832;
+      padding-bottom: 4px;
+    }
+    .inspect-desc {
+      margin: 4px 0;
+      color: #d8e0ec;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+    .inspect-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #728096;
+    }
+    .inspect-stats span b {
+      color: var(--amber);
+    }
+
+    /* Right Pip-Terminal Log */
+    .terminal-box {
+      background: #0d120d;
+      border: 2px solid #1c271c;
+      padding: 6px 10px;
+      color: #38ef7d;
+      font-family: var(--font-retro);
+      font-size: 17px;
+      line-height: 1.2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+      position: relative;
+    }
+    .log-line {
+      margin-bottom: 3px;
+      text-shadow: 0 0 4px rgba(56,239,125,0.4);
+    }
+    .log-line.warn {
+      color: var(--amber);
+      text-shadow: 0 0 4px rgba(255,176,0,0.5);
+    }
+    .log-line.alert {
+      color: #ff4d4d;
+      text-shadow: 0 0 4px rgba(255,77,77,0.5);
+    }
+
+    /* Floating Tooltip / Cursor Badge */
+    #cursor-badge {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(14, 18, 22, 0.9);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      padding: 2px 6px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      z-index: 50;
+      display: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    }
+
+    /* Slide-out Sprite Vault Drawer */
+    #sprite-vault-drawer {
+      position: absolute;
+      top: 48px;
+      right: -420px;
+      width: 400px;
+      bottom: 175px;
+      background: #14181f;
+      border-left: 3px solid #3c4454;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.8);
+      z-index: 40;
+      transition: right 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    #sprite-vault-drawer.open {
+      right: 0;
+    }
+    .vault-header {
+      background: #202633;
+      padding: 10px 14px;
+      border-bottom: 2px solid #11141a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--amber);
+      font-weight: bold;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .vault-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .sprite-card {
+      background: #0d1014;
+      border: 1px solid #283040;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .sprite-card:hover {
+      border-color: var(--amber);
+    }
+    .sprite-card img {
+      image-rendering: pixelated;
+      max-height: 48px;
+      object-fit: contain;
+    }
+    .sprite-name {
+      font-size: 11px;
+      color: #9cb;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f1217;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #323947;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--amber-dim);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chassis">
+    <!-- Corner Rivets -->
+    <div class="rivet top-left"></div>
+    <div class="rivet top-right"></div>
+    <div class="rivet bottom-left"></div>
+    <div class="rivet bottom-right"></div>
+
+    <!-- Top Navigation Bar -->
+    <header id="top-bar">
+      <div class="header-logo">
+        <div class="hazard-stripe"></div>
+        <span>VAULT-TEC GEOSPATIAL RECON // MODEL VT-1998</span>
+      </div>
+
+      <div class="controls-toolbar">
+        <button id="btn-sound" class="btn-chunky active-green" title="Toggle Synthesized Sound">
+          <span>🔊</span> AUDIO: ON
+        </button>
+        <button id="btn-lighting" class="btn-chunky" title="Cycle Atmosphere">
+          <span>💡</span> TIME: NOON
+        </button>
+        <button id="btn-crt" class="btn-chunky active" title="Toggle CRT Scanline Filter">
+          <span>📺</span> CRT: ON
+        </button>
+        <button id="btn-grid" class="btn-chunky" title="Toggle Isometric Grid">
+          <span>📐</span> GRID: OFF
+        </button>
+        <button id="btn-vault" class="btn-chunky" title="Open Sprite Vault Drawer">
+          <span>📦</span> SPRITE VAULT (41)
+        </button>
+        <button id="btn-reset" class="btn-chunky" title="Center Camera on Outpost">
+          <span>🎯</span> RESET VIEW
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <main id="viewport-container">
+      <canvas id="diorama-canvas"></canvas>
+      <div id="crt-overlay"></div>
+      <div id="cursor-badge">GRID [0, 0]</div>
+
+      <!-- Sprite Vault Drawer -->
+      <aside id="sprite-vault-drawer">
+        <div class="vault-header">
+          <span>ARCHIVED SPRITES (41 ASSETS)</span>
+          <button id="btn-close-vault" class="btn-chunky" style="padding: 2px 8px;">X</button>
+        </div>
+        <div class="vault-content" id="vault-list"></div>
+      </aside>
+    </main>
+
+    <!-- Bottom Pip-Boy Control Deck -->
+    <footer id="bottom-deck">
+      <!-- Left CRT Monitor: Radar & Radiation -->
+      <section class="crt-screen">
+        <div class="screen-title">
+          <span>TACTICAL GEIGER-RAD</span>
+          <span id="txt-coords">X:00 Y:00</span>
+        </div>
+        
+        <div class="geiger-module">
+          <div style="display: flex; justify-content: space-between; font-size: 16px;">
+            <span>RAD LEVEL:</span>
+            <span id="txt-rads" style="color: var(--amber-bright); font-weight: bold;">12.4 RAD/H</span>
+          </div>
+          <div class="geiger-meter-bar" id="rad-bar">
+            <!-- 16 pips -->
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+            <div class="meter-pip"></div><div class="meter-pip"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 6px; font-size: 15px; color: #8cd680;">
+          <div>ZONE: <span id="txt-zone">OUTPOST PERIMETER</span></div>
+          <div>ELEVATION: <span>+1.5m BARREN DUST</span></div>
+          <div>WANDERER STATUS: <span id="txt-wanderer-action" style="color:var(--amber);">IDLE / SCOUTING</span></div>
+        </div>
+      </section>
+
+      <!-- Center Deck: Object Inspection & Interactive Commands -->
+      <section class="center-deck">
+        <div class="action-button-row">
+          <button class="btn-chunky" id="btn-move-wanderer">🚶 ORDER WANDERER HERE</button>
+          <button class="btn-chunky" id="btn-poke-fire">🔥 STOKE CAMPFIRE</button>
+          <button class="btn-chunky" id="btn-hack-terminal">💻 BOOT TERMINAL</button>
+          <button class="btn-chunky" id="btn-drone-scan">📡 RADAR SWEEP</button>
+          <button class="btn-chunky" id="btn-preset-scene">🗺️ PRESET SCENES</button>
+        </div>
+
+        <div class="inspect-log-box">
+          <div class="inspect-header">
+            <span id="inspect-name">INSPECTOR: SECTOR 7 RUINS</span>
+            <span id="inspect-tag">OBJECT ID: #98-D</span>
+          </div>
+          <div class="inspect-desc" id="inspect-text">
+            Click on any tile, character, toxic barrel, campfire, or vehicle wreck to examine details.
+          </div>
+          <div class="inspect-stats">
+            <span>SURFACE: <b id="stat-surface">CRACKED DIRT</b></span>
+            <span>STRUCTURAL: <b id="stat-integrity">100%</b></span>
+            <span>HAZARD INDEX: <b id="stat-hazard">CLASS II LOW</b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right CRT: Vault Log Terminal -->
+      <section class="terminal-box" id="terminal-logs">
+        <div class="log-line">[SYS 1998.11] BIOS INITIALIZED.</div>
+        <div class="log-line">[SYS] LOADED 41 ISOMETRIC ASSETS FROM /sprites.</div>
+        <div class="log-line warn">[GEO] SECTOR 7 - OUTPOST DELTA ACQUIRED.</div>
+        <div class="log-line">[SENS] GEIGER BACKGROUND RAD: 12.4 RAD/H.</div>
+        <div class="log-line warn">[TACTICAL] WANDERER READY FOR DISPATCH.</div>
+      </section>
+    </footer>
+  </div>
+
+  <script>
+    /* EMBEDDED SPRITES (Generated directly from /sprites directory) */
+    const SPRITES_B64 = {"barricade_sandbags.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAoCAYAAABOzvzpAAACcUlEQVR4nO1ZsUoDQRDdPfwAiyBB8BqDlVhYKIQ01l5lZ/4gH2HlR/gH2llpbRMELVKIVYhNAkeQFP7ByYRMWIddd+52L+7JPlj2cuzt3sy8NzNJhIiIiIiIaCYGVxeF6x5SNAhZv7s0eG+/LWYf8+VMcXN9L/+dA7KV4dR4kxPKOCIRDQMYTWcc6n0uEhG4ttPOTpFPF9ZnKDPgucZIILNo++Xp/cfn3bQlwCkwm/Bw+8yybUsEYDiCo23VeJsTgpPAQFO2KL11Gj89O1wbiuvVGQcAHGdy3sYlkPW7hSmij3dD0WpvsyOJ+7y9TsTRSWd5D67PL3va/blVQIqaDOckKhp9X7SG/cHB08mnDEoCM4vGVW1XBe7PMd6bA3Rli2oVoWobjKXR1mkcZzp+258LKTxrG8uWS7am2saZlkMA3R/fp5ZOMOt3CximbM2NpDrT9QBIcuq+6ASoBov515o5cA2A+6rxtTEgMyQ3PJwyghMxgM+6jud7T4LpqrXkaBuHKWJqTa/KFFOixLO5SVCKEjjuHawZ4BqxMtrWGWs7n9sKy6oO4L5MFXqrzQ7A1Dfozuca7pQDckZEcI1r706bJ3AO0htkyaW6NwfkGiMwYrZOj4LS2+e3PC4S7kJscHSaRLrS0oWJT02C+MUGZl2Cc+0Ey0K65ABfpYvDFN+R9/J7QO6hfmPdVg2k2h6JsagLSZnFm+rdXRNbGSRVHkJHUG0D6GzTOES+LnpzILkLgZbwAwbARnu1GqgtqY+y9WcMmK5e3Nah0WqgGhya8ZUkULZ3Dx2yykO6lpgyYzQcBxft2pAy/4SIiIiIiBBh4RuXr3K1dHYS+QAAAABJRU5ErkJggg==", "char_mutant_hound_0.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAgCAYAAAB6kdqOAAAA7klEQVR4nGNgGAWjYBSMglEwCkgCjMQoctBR+A9jH7jygCg95AImQgoUxATgjkF3HN0dpAB1jN5+cQZ6OYpgCIHAJceXDPQCRDmIGJDpbUKVUCOYQBXEBP4riAmgiIESNrZoE332iUHEUgnOn771DCPVQ+jBqw+M5DiG3FAj2QcOOBzzWoqPQVNeBEP9m+P3GFa/e8dItzQkSsAx6KFGUweJQh0DAtcfvqHYMWQ56AC0pEZ2DAgghxCyY0hN2GRXAw5Y0hLIUZQ4hqogk0rlEMlAAa1uo1QdVRO1Ag0cR7Wqg1pg1EFDOoGPAgYsAABivVgRsLBkiAAAAABJRU5ErkJggg==", "char_mutant_hound_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAgCAYAAAB6kdqOAAABAUlEQVR4nGNgGAWjYBSMglEwCkgCjMQoctBR+A9jH7jygCg95AImQgoUxATgjkF3HN0dpAB1jN5+cQZ6OYpgCIHAJceXDPQCRDmIGJDpbUKVUCOYQBXEBP4riAmgiIESNrZoE332iUHEUgnOn771DCPVQ+jBqw+M5DiG3FAj2QcOOBzzWoqPQVNeBEP9m+P3GFa/e8dItzQkSsAx6KFGUweJQh0DAtcfvqHYMWQ56AC0pEZ2DAgghxCyY0hN2GRXAw5Y0hLIUZQ4hqogEy1HoVc5dAEKeCwl10EkpyEFGvucalUHtTxBFweRAmjmoAdoVQ5dHPSATEsHHCgMRBFALQAAV+BdiS65oMsAAAAASUVORK5CYII=", "char_sentry_bot_0.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAsCAYAAAANUxr1AAABIElEQVR4nGNgGAWjYBSMglEwCkbBKCAKSIgI/GegAmCklSNevPlAltmMlDhEXsMEzFdW08BQs2/TErIcxkQNx9y9dQNDnZNfDIp6mjkI2TEgAHIMthBCdhTNHCQhIvAf2TEggMsxyI4iJZTICiFkgC26KAEUO0hZTYPBfN8WhqV9CmCaUsBIbmImJdpIyXFEh9ALHIYRcgwh/eiABV2gfeI8rAmwMj8Jq4H4chk66HJQw2p22YFbcLMZqZHL7hJwFCjKiA0hkktqCRKzPimOITuXPbxxhmjHkApIdtALqG9hjsJVDpFblw262n7QtYcGHWAkpEBOQYWqPn/04A4jVRK1pIwCGFPKpnnlSm0w6iBCYDSECIHREBpyBeMoYCAAAIb/b41rwYqmAAAAAElFTkSuQmCC", "char_sentry_bot_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAsCAYAAAANUxr1AAABGklEQVR4nGNgGAWjYBSMglEwCkbB4AQSIgL/qWEOI60c8eLNB7LMZqTEIfIaJgzKahpY1ezbtIQshzFR4hgQuHvrBgM24OQXQ1ZUkuwgZMeAACiECDmKFEBScEqICPxHdgyyo/ABUPQRG3VkhRApjiEVUOygu0jRZb5vC8PSPgUwTS5gJDcxo6chfCFFSo4jOoRe4DCMkGMI6UcHLOgC7RPnYc2mlflJjJSmoS4HNaxmlx24xTg8ctmLNx8YH944g+EYXOUQqY4h2UEwgOwofGkIlphJASQ76AXUtzBHUbsuG3S1/aBrD40CQoBgPMspqFA1Kh49uMNIlVwmKaMAxpSyaV7bUxuMOogQGA0hQmA0hIZcwTgKGAgAABUZeGKZQ6kiAAAAAElFTkSuQmCC", "char_wanderer_0.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAwCAYAAAB5R9gVAAACD0lEQVR4nGNgGAWjYBSMglEwQoCCmMB/apjDSCtHPHj1gSyzmWjhGEpCjIWBAqAgJoBT7sGrDwx0DSEYWDhJCC8fBtonzvtPMwcpEBkd5EQb2YlaQUzgP6EogyVsUOhU5icx0iXK7n1hAePvAipwNjIAOcbIyIho8yh2ECEAcoy7rQEjXcohBx0FnGnkwJUHjDsPX/hPimNoCtqJzFV0jzK6FYwKYgL/WwuFGWYv/cugKS/CcP3hGzANAnJuWQwzW4sY6B5Cxb1vGVKjmTEcw3t7HdlmUuQgDQkBuKNgjnm0axolRpKXyxTQCsUbLz4w9BYLM8xZ+Zsh2EaP4er9FwzaihIMPauOkFzrUyVRB5qrgB2TEs4Kdwy5gGIHacqLMNx4+opBQ1oMHH02Nu8pMo+J0ui6/vANSkiBHCUofR0cUiVhNiRXsBSHECPLP4b/f5gwHEVuSDFRwzGa0HIIBmoibMCOIstMSqKLkeUfOO0gA1CCRk/YpOQ2ikLo/x8mlJABAZBjkOkByWXX0RwFAuRmfSZKW4jXodUGrpACAVJyG1VCCJmmWwjhAtiii5K0xERpg14TTxpCzm3kFJJ4HeSgowDGID6MDeNnepvA2TA+iJ6S44NCU7UcckBrP4PazMh8mCPwlUc5U7YMjvY1XYCECDhdoUQVPvEh28hnYhhkgIlhkAGmgXbAKGAgEQAAy8bljWZCaGkAAAAASUVORK5CYII=", "char_wanderer_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAwCAYAAAB5R9gVAAACE0lEQVR4nGNgGAWjYBSMglFAG6AgJvCfGuYw0soRD159IMtsJlo4hpIQY2GgACiICeCUe/DqAwNdQwgGFk4SwsuHgfaJ8/7TzEEKREYHOdFGdqJWEBP4TyjKYAkbFDqV+UmMdImye19YwPi7gAqcjQxAjjEyMiLaPIodRAiAHONua8BIl3LIQUcBZxo5cOUB487DF/6T4hiagnYicxXdo4xuBaOCmMD/1kJhhtlL/4L5mvIiYFpbUYLhs2oQw8zWIga6h1Bx71uG1GhmsGOuP3wDFgM5hvf2OrLNpMhBGhICYEfZ2LwHO0rOLYsix1DsIHRH7ZrfwHD1/gsGSgAjtUppRpZ/DCnhrAzvn2qCHQVKSz2rjpDcDKFKLmNk+cfw/w8TOKQEpa+DHUMuoNhBmtDcBaIDzVXgjqJblCmgRRcodDSkxVDUrD95h6G3WBgcfaRGGxM1ouo6NMvDACyk6N5ihAFYOYRcONIlyhSw5C6YI2AA5BhYLoMBUqKN4kR9HS26YOUQueURVXLZdTRHURJtTJQ2Wa9D0w6ukAKBkjAbotvXVC2H6BpCuAC26KIkLTFR2sPQxJOGkHMbsdFGUggduPKAEZnGloambz0DlsuZsoWRnGhjIscxDjoK/9EdB6MzvU3AoTAlx+c/KIRADmMYkUBCBJyu/qN3hXCJD9leBxPDIANMDIMMMA20A0YBA4kAAATU53X56RewAAAAAElFTkSuQmCC", "char_wanderer_2.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAwCAYAAAB5R9gVAAACGklEQVR4nGNgGAWjYBSMglFAG6AgJvCfGuYw0soRD159IMtsJlo4hpIQY2GgACiICeCUe/DqAwNdQwgGFk4SwsuHgfaJ8/7TzEEKREYHOdFGdqJWEBP4TyjKYAkbFDqV+UmMdImye19YwPi7gAqcjQxAjjEyMiLaPIodRAiAHONua8BIl3LIQUcBZxo5cOUB487DF/6T4hiagnYicxXdo4xuBaOCmMD/1kJhhtlL/4L5mvIiYFpbUYLhs2oQw8zWIga6h1Bx71uG1GhmsGOuP3wDFgM5hvf2OrLNpMhBGhICYEfZ2LwHO0rOLYsix1DsIHRH7ZrfwHD1/gsGSgAjtUppRpZ/DCnhrAzvn2qCHQVKSz2rjpDcDKFKLmNk+cfw/w8TOKQEpa+DHUMuoNhBmtDcBaIDzVXgjqJblCmgRRcodDSkxVDUrD95h6G3WBgcfaRGGxM1ouo6NMvDACyk6N5ihAFYOYRcONIlyhSw5C6YI2AA5BhYLoMBUqKN4kR9HS26YOUQueURVXLZdTRHURJtTJQ2Wa9D0w6ukAKBkjAbotvXVC2H6BpCuAC26KIkLTFR2sPQxJOGkHMbKdFGlIMYoG1oGEbmw9iZ3iZwC5HZU3J8wGxiHER0lDnoKPwHNdxBGD2EQJaD6Olbz8DlQCEDc1TOlC2MMEeNHCAhAk5X8CgjJD5kex1MDIMMMDEMMsA00A4YBQwkAgDpQOW5obX0rwAAAABJRU5ErkJggg==", "char_wanderer_3.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAwCAYAAAB5R9gVAAACG0lEQVR4nGNgGAWjYBSMglEwQoCCmMB/apjDSCtHPHj1gSyzmWjhGEpCjIWBAqAgJoBT7sGrDwx0DSEYWDhJCC8fBtonzvtPMwcpEBkd5EQb2YlaQUzgP6EogyVsUOhU5icx0iXK7n1hAePvAipwNjIAOcbIyIho8yh2ECEAcoy7rQEjXcohBx0FnGnkwJUHjDsPX/hPimNoCtqJzFV0jzK6FYwKYgL/WwuFGWYv/cugKS/CcP3hGzANAnJuWQwzW4sY6B5Cxb1vGVKjmTEcw3t7HdlmUuQgDQkBuKNgjnm0axolRpKXyxTQCsUbLz4w9BYLM8xZ+Zsh2EaP4er9FwzaihIMPauOkFzrUyVRB5qrgB2TEs4Kdwy5gGIHacqLMNx4+opBQ1oMHH02Nu8pMo+J0ui6/vANSkiBHCUofR0cUiVhNiRXsBSHECPLP4b/f5gwHEVuSDFRwzGa0HIIBmoibMCOIstMSqKLkeUfOO0gA1CCRk/YpOQ2ikLo/x8mlJABAZBjkOkByWXX0RwFAuRmfSZKW4jXodUGrpACAVJyG1VCCJmmWwjhAtiii5K0xERpg14TTxpCzm3ERhtRDnoAzbKgZikIw9ggGuQYEHv61jMo2ZrcOo2oBpoC1GfIbWgYG+SYTG8TMBvmKBAfFkIwsSk5PlQZjBg6QEIEnK7+o/c8cIkP2UY+E8MgA0wMgwwwDbQDRgEDiQAApyLwDuxUCKwAAAAASUVORK5CYII=", "fence_chainlink_ne.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAChS3wfAAAC9UlEQVR4nO1ZsW4TQRCdQye+gg6JgAQCucg2prNES01DiEiHRE1DkSY1UjpQcJWGJi1SOtKEwgIRiRDpOj4gdRqjt7lnDZtds2dje/dyT7Lubry+3MzOm3lzEVkxPn/5NpbrDNMfjBmEnXd79ohrni8ahSQQgNt37srzFy8ntiePHxUMCs6lzTD9gXX02earSRYsa/eBZDJgf2+3YBCABw979tjr9WQ0Gsmb15sLedZSEgGcRxBcG4NAIDtwDWrgfFGBWRkFcMRn4/6tv+yoCfzo63n/fiGJUoDX2n7z64GsbW3b7//XzheSQADunZ/a8+HJby8FfNTQNcLtFE2oUUoCgOPW2ZNdQepfrD+1dr37oeygjkChZDB0zUgepj+wnNf857WuA766gCN/T/Gka4TkAFM7oHeYgMM+u17PIsr1WkfEKMobkgA0x3UW6JrAYITaJdf/+H6pGeA4aUEsU2DNRAHt5LTWqKmA37vU0Pfx0WKZs8bCKECnNQWm3SdUI0pJAKFqP4R9XYJdAF1DfzftPhcfP1jqsEZw4CokER3AVgixgzaIh8XOTVpkDddenZ2KFlIxggqAjjj4tC9ZUkDbYygQspv+YJwlBbQdoHjS92GNmKxXdqxFpv2UBIUQHtAnePSuu13A1zX0+pDQMip7kqWA3kki5ITuDu56n91kQYG62rsFUq+70gXq9Vfu79irs8shLItZIJTSIQqEZockKbARIXjmFUJJd4G1rW2Bhge8qT4lpQEGY9iwm1QpUICgQgul+iwUyKILuNDjbIywie0CSVNAg6+yGARNDa6J7QK+ruFSoJDEwUD8ev/WOyPoWSA0O4RmBJMiBZpSw30jlOUsMA81AKa73f262se8XK1yoEAIDARG2lnGYVKglEzBjIAT/B8BQGfd9SF7KZnj+OiwOD469HYN0CI0DmdPgRDcQLSWArHF8l8UKKTl0BnhZkHVRgo0EVSmjRRoSo1rCwTC5CSFO3To0KFDhxZiZ8XC5A82mfOmW0fg9gAAAABJRU5ErkJggg==", "fence_chainlink_nw.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAChS3wfAAAC4ElEQVR4nO1YsW7bMBClAsFf0T1LgxYevHXu2lmTYCCbgc5dOnTxXMBbi7RdNHf1nC2DkaBeuvcrvKh4Sk54Yo4W7dgmaegBssizJet0790daUxgLG/v65D/f3GqP5p/vanFWYxxxvzXj+8mJPJT/Ik4/v7d20zGMTh/ciDyEv1iOuucQyE75s3h7Hg8NqvVqpn/eXg8A9XNIhPnMTYpY06aljHPy9evnkUZNhyhGXAQwFHWNs+Z6nLYdhMQ2SFvJtG3qY5I/1z/ayk/uvtteB5SAvmuDn76OO08LCItGv/77XPjGH8PJzcYrBcdR0NHfi8sieZS1zVKM9VF/5iz5tluUnW+fHJIewnsrG0X52NIgrlvKUMTgzHoDo2LFIqJqbmkAS3V14tOhG0JNNIIjLxP61LHxYaoVZTAGK4X4WsPuhaYU68OpznBIeI4OJvj4ZHNAZk3L8eKsjjpspsUEhyDNS9zzS5w6dzOE0ElsLy9r1njoLoWpT7qCgs2kw/tHGPNjnPDpokJz4JiOmtbVlf2lohp9r5SyKXPvk9oBjTYRtFjSSCWtUDOD6RSdDqrkeyEyvJ9a6ebaZKR65z2wBK4kAG3sL5ZXV6Y9nu8nGSqQOGR7V12u8vbpQrEkANyfiCfBsZeyTFgd1WB6Buhqoe6sNuNkFzLEtgmJa1xMuckgWLHKpCEBEqL0iIBtvN1vlLCtVdvxp3Nk+ASGD1RVCiLhxZKizTEeY3qmjQ0yaDpgvPoOKPYEC2OKAG287Z4LMi3NUK7ZG+tOsjvEW1tOy0GZPhwLXzsbM0LG81Z+z5wHIjR8RdJoKTypTVCMVLdqwqMtvX8ZO+sEehml9dfzNyYKKn+YglsKD8kS/W+PcHKsW/flLz14pld6niKju+9FjCRZ/WDSqC0sn3KVN9PAnePneE5Ou4lgcsEs/reL6AiCUgNP2fHVQlcnTHVvbbFzYABAwYMGDBggDkdQvcf/wHV0/MjAuceSgAAAABJRU5ErkJggg==", "prop_ammo_crate.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAgCAYAAAB6kdqOAAABfElEQVR4nO2UsUrEQBCGd497gCvCGQJeo4gINsFKrK2ustM3sLa2sr7aN9DOyspaLERSKFgcZ3MBiRLh3uBkQgaXvd1kZkwazddsSLI73/47iVId/5XT86NlE+voNkQuL27E6+o2EknfMrW+EYrEtFQkLYuao4/bqwdyHS1JJGXIcMVqXxif7HuP5nj3wzvv+mVNJNavSiQl7pwLbtIl1rNvhMFgCRO4MmeTL5EY1KsUyvKF5jThb4A6UK+xHjJ5untVe4c7ioKoh+zJY6KYVIQs1IQYpwXIQhIxSS+uNDWV93le+ez5cSZal51QfLBVJBONgqIwjLZkni1UEA7gsnh3Pvts/sjiUsQs7pJCGRiR0eaQLNajiMSGDBZ3yQBlMisjiqGcD01NxIUpBf+haHvoTMiHKzEtEbFlzK8J5nOkbDF2UyMgk9xPdaKmygTulZeiHylbKLISqds1JtaKUOJIhDIHxrpmZgklP8cgBhOrE+u3LSIV6+j4M3wDiq/gMrwwqEQAAAAASUVORK5CYII=", "prop_barrel_stack.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACp0lEQVR4nO1ZLUhDURQ+jiFDFgwLJjEYjCbT0sNgEqPZYBUMgsUiODAoJkHBZDDK0oK89JJBFA0KBjGJLBiGDIOT8/A8jofjdu92rj/wPnjsvru37fvu+b13ADly5MjRDfXF6Q4ExNBvkZ0/uTT57QL80kpbWaZg8SX9kqkbiDARsHz28KOfC+JC28mj1/O3T68mv1sEQ3ARa9Xx9B5fOdmpsREz8qYWcLGINfmgAjRYkzcVgK7iCrQEXhYwDWJNBK06J4xzVtYogCE0EfX7JoRE0fLLKPPwe4Jc8dQiN//AAjgXIniDZSFuARzPT1a+vC+Dt7Z31PkzLqQBY0CKkKgpItZXlob+RB1A8rTqvJD1cquao2XM6wCPARyjBThpLqYXXEQM7ELYEmNXSQHMA1mLAVcLIPY2V8FUgGv/ToFMgkiETy90fXXh9FzRgvzB7EQ25i5E28b79ntnuFwBeGhl70XlNqRzAHB3uAFvMwvpePj8NBubxYDFjgsJ40WIW6X0fn93KyWMxBE+5J0FWOy4kDBeHHGrBNVoLiPPoc0NlIUG3XFxC/BxEjfSVedW8IFXEEsR5O88PX4XpHz1+ThCIQrx1JXqxxA0jZIgzDK8bc4EOTRr8WcscN/3sYRXIdP6fZyTvb5LuuTu9CYC1zwLdWuVZbf5xQJdiJMbxSKwfbNR30HMixUR9620CMxCHEHSqAZuAVfg6pPPE5K4oT5rnkYluAU0n5cupBWxqNzOLCAJm7tQLyHypEEKkoWM7pO4kbUP/dQBbwEyE1EK7fekoRrNZavN+6FgaVT6PD91ICv4nPkknxbgpH0C2WnbNlYZ7UyWdK109qnFwc7NMzw1X0z/RBnYAtqpgwark7egvdB31TnEIW6wIKZKrB0h5siRIwf0wgd0+o7pbrtG5AAAAABJRU5ErkJggg==", "prop_brazier_0.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAsCAYAAAAEuLqPAAABXUlEQVR4nGNgGAWjgIbg/3q5/wNi6f+BsJhcwMhAITA30FoAY5+8cC2BVP0sDFQAmZ/vxYMdwMBAsgOYqGX5dF6lheToZ2KgAnAzZ4c7hK5ggTIHOMWDaLomwgXKHP/je8QwxBeWvGJIuPuDke6JcCEZFsMAI6k+B8W3ZCg/htzz1R8Zdp38SbJDmBiGGlgATXj/P/QgMAUJkYkcTaDgZtg/CSHgmMcASpTPovhJdggjqfEPAuA04JiHqWj/JIjjGBiITg9MxDoAZBjIUKwhAAOOefAECnIsMaHBRKwD0B0BBuiOQOITGwKMZEcBCOCIBhAgNiqYGAYYsJCtk96JkFaAkRhFEiIC/z0keLDKaYlw4dTXd+UVw4s3HxhpGgLX3nyjSD8TpQ7AFwI0ccD8ZlQtpfk/8PIJAUZiFI2mAXxgNA1ojZYDIqPlABfOHDJaFxADmBgGuDYcBQwDDQDflcLNR4TTMgAAAABJRU5ErkJggg==", "prop_brazier_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAsCAYAAAAEuLqPAAABYklEQVR4nGNgGAWjgEywQJnjPwibG2gtYKAAMJGrcTqv0kJKLKbYAdRyBBPDUAYLlDn+P4viB6eFAQsByVB+hgEFC5Q5/v9fL0d2KDAxDDBgJFcjyMfxPWIY4gtLXjEk3P3BSNMQWKDM8d/NnB2rHEiclOhgYaAk8TnmIQT2TyLZ9xQBWOL7/6GHokTISIqFoOCFZzs034PA89UfGXad/EnbUFiA7HMYpnUILEBKdBhxDwP7J4FDAARICQUmhgEGLMQoAvvm7g9ISDB8ZJBkgMQ5ekiAQgcWCsQCJoYBBozEKsRIByCAIy2AALHpgYlhgAET2b4nAGDqCBXNjMQYJiEi8N9DggernJYIF059fVdeMbx48wGvHUwMFIJrb75RpJ+JUgfgCwGaOKBN7zMKP0bqJV4+1R1QdYkXhb/kmThePtUdgA5G00DMaBp4M1oOvETJFaPlwPCvC6idC0YBw0ADAO9lrM8fa0N/AAAAAElFTkSuQmCC", "prop_brazier_2.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAsCAYAAAAEuLqPAAABTElEQVR4nGNgIBL8Xy/3n1i1owAERkPs/0Ckmf9DMaEykqvR3EBrAYx98sK1BHLNYWIYqiGwQJkDHt8Jd3+QbQ4LuZa7mbMj+AwM/8l1BCO5DojvEcMQX1jyiqLQIMshoKyHHB10TQPxAx0KC6AhAMPkhAQTNUMAxCfVEYzk5gDJUH6IgGMeQnL/JDD1fPVHhl0nfxIVFSwMlAA0y0mxmKwoWIDuezQAEgfJkxINLKRYDLMExedIABQCpAImYhSBghQUtOhxjY1PkyhYgFb0YoQAEp/UKGBiGGDARGoUgOMZPQpAwDEPnjhJCQUmhgEGjMQokhAR+O8hwYNVTkuEC6e+viuvGF68+cBI0xC49uYbRfqZKHUAvhCgiQPmN6NqKc3/gZdPCDASo2g0DeADo2lAa7QcEBktB7hw5pDRuoAYwMQwwLXhKGAYaAAA0u63i721rccAAAAASUVORK5CYII=", "prop_brazier_3.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAsCAYAAAAEuLqPAAABTklEQVR4nGNgGAVkgv/r5f6Tq3cUDB/wn57p4P9gTnT/B7PjaAbMDbQWgPACZQ6KfM9ErsbMz/fiQfR0XqWFlDiAkRxNIF+7mbPD+btO/mRIuPuDLLMYybFYMpQfQ+756o8UOYRkAHIMKPXDMLlpgYlhgAEjOZoGRVQsgEXBhx4EJiMqmMix+FkU///4HjGs8iBxkDyxDmEi1QGgoAUFMSiosQFSo4CF1HwPj3fHPKxqQfJuDB8Znpmz/yfGIUyk+BoEcPkcBmDyxIYCE1khgM33+yeRbDlRDsAa/DgATB6knmqJMIGGwQ8CRCmSEBH47yHBg1VOS4QLp76+K68YXrz5QHkixAeuvfnGQAlgokg3gRCgiQPa9D6j8GOkXuLlU90BVZd4UfhLnonj5VPdAehgNA3EjKaBN6PlwEuUXDFaDgz/uoDauWAUMAw0AAAB29Hdy/MxDQAAAABJRU5ErkJggg==", "prop_dead_tree.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAABu0lEQVR4nO2WsU7EMAyG3YiRAXWBAfUBOrHwAPfkPAALUx+gYuCWEwN7kZEiWVEarq3jODl/UqW7XHvNpz+xA2AYhmEYhlErHSjn9DIs/vP58gPTfNk05zuoROyxv9/1Pw4Uy6EYsldO5RKlcl4stTRPQdIIvberVYw+syanQpCK4eTC7/89l5IrKhirjik5ej/lnJBTUWSuTe7tY+7wCp9FUkmLJxgTyZGcmgRTHJVTWWTC8SNy6opM7Dd6D7L1qNZBAbbuub1yRc6i1y5JjmOa2iJD5Y6kJ55gqkX4cc/R5FRU0TU5rvSKF5lUchxyRYvMWmrcOCgsF5PiSk/FEo2Jcgo6aFgua4Lj0C+pPSUhp6rR55DLKogTDask9zFMZZsYnh7+rvnrO3t6RZYoFZPAlUhQKr3iCa7tUU4cFMLLvY7P7QmeheREjmphw8c9SHmfPrPtP8SqKDdhgrlxom+7lT4oiRN9W4sJTsGhmyaYu4IiliA3tgeZcSCMJciMA2GaTHAircL3QYkWgViC3DR3krmJPTgO/RJLkI5XKTgO/YIXLSb0XIrj/h6oiTEx6dR4daIxmpAwQI5f99CWhHm9lIUAAAAASUVORK5CYII=", "prop_mutant_cactus.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAsCAYAAAANUxr1AAABB0lEQVR4nGNgGAWjYBSMglFAG6CcKfefGuYw0sIhd6c/IttcFgYqAO8mSTh7a91zisxiokU0KVMQfRQ56C6OqKEkyihKQ0Y2av8/6v7AEOe/zMFw7sgtxgFJQ/yXOcA0yGEwNiWAkZLQYSAAyAklskPozYsPDCISAnC+lJwIivylU3fIMpegg3yirFBCYsuyY1h9/ezRGwxH0T2XIQNqOIYiBz3cZY8RQvjkae4gebeDeEMIXZ5midoImrtAiRoZjNw09OzRGxQ84tIQEwOVwDO0EBo5aQgXGDFpiIXcGltORQyljhu55RDDSE9DTAxUAs9GyyE0MJqGSAXPRtPQSE1Do4CBAAAA6xqFcO0ikfcAAAAASUVORK5CYII=", "prop_radar_dish.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAA2CAYAAACBWxqaAAACKklEQVR4nO1YPUsDQRDdPSRFKkktwSKtCFe4TUqxthZBBP+Lf0IQm9SpUweLFAdimypYi5WFjTJHNqyT/ZzbTTxvH4Txbi+7782buezKWEZGRsa/xvho8J1yfp6S6Oiwv/l7+fG59Z3523vj9Xks4ipZE77OLllvMd0SNW8gpGhCHD5AXEceyOII5NXr0WGfDS+uNnPtTICNOCaLIx6/v36uRcBcFBGcSt5G2hc3t3fs6fHh173VbBJUUkUM8gA101TygFAn+F/JPIavE14O2DISK/M6+DjhXUK2hlWjxMlpuRWBfFVV2nEMaOykr1GALfOvL1VNTsayLGvycC3H1UgFWYCr9tUMS/L4fgwU1Dq01b7MPEAlj52J0QdOAaY3gckBtWwAKnk5rosmuN5E5BIyOWCqcTXKz157AODqAdzIqjOxeoDH2HFSfsxcWM0m8UrINkkK8hI+v8Q81l4olpjeYlqfE3w3dEE9AJPqTlYAvHWmYhlAntTEJhGSNBaBo+55GUO30gDyUc7U2LbDDC6v3vrat2GjCnAJ2dWZmLOW/1ciKcT4vD6sQ0y1RsESY3UwYK2EWGd9eDyqY0oXokMlKwXg+60podZBoCyrDujGmyI74MoudsD03N5hIqUTYHs+FLmEXNk0OeD6ni+yA8KRRZsDe29on8VdApqK6G4JCc+s+TjQxIVuOiACsuXrwM4aOnSREAGU+btVQoJgcagDoet0y4EMFh8/JRuK+Bui27UAAAAASUVORK5CYII=", "prop_road_sign.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAYAAABwrHhvAAABIElEQVR4nO2WsQrCMBBArzcWwc1PEHe3IoJzFz9B/AF3wdXd3Y9wcRZE/BhxcJAOIihXCNSStEkumsF7S+gQ3vMSqwCCwCTP0hdnP4aQcyKQK98sex/PPwnIa3JOBHLlCt8IDCHnRGAouW8EhpT7RCS28uk4hcmoA4fTHVbbJwz7D6NYsVhfynV/LhKvgLwm10GSpsm0RaCNnKBPrlu5dwJNG1Xx7liUz2r81VXHaHZzmkDSmK+ZhEKFffUONEW0TcRGTlgFmCJMMWo6bXLC+kVUvxMEfR05csJ6AjaTcJUTzj9Gukn4yr0CdBG+csJ5Q5Xqy8VHTrD+kl0xY8nZAUR3MGftR4gMSgDIEUQGJQDkCCKDEgByBJFBCYB/PwLhDTwQswi4VIc5AAAAAElFTkSuQmCC", "prop_shelter_sign.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAuCAYAAABJcBuEAAAA+ElEQVR4nGNgGAWjYKQDRlwSEiIC/6lp0Ys3H7DaxYJP05EFAgz7j3xhcLThoYiunfMHpx0s+ByAbEjxlG8MDCDMwMDQy8CA1TKjiFcQjVO+MZxbIQYXZ5jzAacdTPgcgGw4LnFkGpfj8QEmYkMAlzgxjsQHWPBJohgCDX6YOHJww6KFGMdTLQTQAc1DoBdPiIAASBw54VE9BBwJGIovK5LtAEcSDCXFsWSVA45oNK7gxupYPOUA40AXxRQBGxmh/wk6MhQ5lIlhgAHTqAMYRqNggAHTqAMYRqNggAHTqAMYRqNggAHTqAMYRqNggAHTqAMYRnoUjAIAefzeXZI2uwcAAAAASUVORK5CYII=", "prop_skull_bones.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAcCAYAAAAJKR1YAAABPUlEQVR4nGNgGAWjYLiDF0/O/R9I/VQ19AUtHEOs4S/Q5El1DFmOf4FFU21JzH90eWo6hpEYzVMn9MH59g42KPI6BmYMEjJGBM1BNg+feiZCBkzF4xgQuHLhFFYf79ky4z+pjgEBFgYiwfFTV1Ac1dE1g6GiLAPMBlmCHpLojiI2JPGGUC1SeoE55uCBIxjqQBajOwZbSBID8DqouWcJ3EeWZjpgx8BCCBY6IODik8GIHpIwAApJUgDBNIQMsKUhXCGJDWBLV+iAqNxRi2QhumWw0CHGUcghSVGibkaKOgYGhv9ofKoCqhpcS0RIUh3sISIdIKsjVj3J5dAeqMGk5BqQHlJzGVGG7tky47+LnQEY41NHjnqSgQsRBsMcQI56dEB2QtuDFoV7Dl1gpKZ6koELgZCgVP0oGAUMZAIAWJTdnJPU53QAAAAASUVORK5CYII=", "prop_terminal.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAsCAYAAAAEuLqPAAABDElEQVR4nGNgGAWjYBQQCdasmPOfGuJkg//r5f5TQxwdMOKSkBARoKoPXrz5gNUuFnyapDTECBosJSdCUM2ZXddwyjExUAiePXpDkX4WYhT9a1fFK/8Eh7jM9PfUccCzSTeIUYbpAFZx6jhAKk8DTIfbhILplUdW42SjACJCgBFfLoAlwieSfxnIAWbQEAAlQrJyAbYQwOtjdDAsQ4Aonw/bECAZDJtyQOY5M0V1AT7ANNB1AeNAV8eMhDSCHCKvYYJXjbIa9kS6b9MSnBZTLQqUcVhOLGCi1AF3b90YWAcoj4aA2mga0BjYRHh3NBfcGi0HbgxsIlQezQVqQ7wcYCSkgNKWEaEGCcOIBwApfIVQNoNgSAAAAABJRU5ErkJggg==", "prop_toxic_barrel.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAoCAYAAACfKfiZAAAB8UlEQVR4nO1WPUjDQBj9LhSRIiLi7xxwcFS0WK3g5BCRjo66iw5FEHEU6dJBcRLBxcGxiB3EodD4QxEdKjgIztoqokWCiLTyXXMlhsS7XFNwyIPyNXC59+59PxeAAAECNAgtGq428j6RIdta63Fds7xZojFzYRBfBWjRcBWJs2cfMDXRxl2PQkREKDLkGHnA9SLpISLkGOOTYdc1TJTdGZF0KDwB1/ctvCWU/DahwnSmUn8WfZ/wNu/r6qgOD3wBzwU70jkDjg806B89haeXN1eekPCO5qY8IWwNkotA8SLAiQgj5h5TkHwPQ3e5k5I/3F0J7UO8pICd/vy4FcZnPh0LUB0coeQYEbwUEK8CnGC1e2H2EvaPxurPvtaAkwOIvd0sdWA70gt6TPnlgO81kM4ZlDyxY9AfAuPQXAmW8kU40ZR6GkQQknEARaQWa52AJ0+Z0akGmuJA3BSBwJNbhw/WAKLpDugFAL1Qc4KlYj6hgh57pP9FHQjJOgDAIsDNoXlR5YtQ1iugrkSE00Bk2hCHzXP7q9DE870NrUAHsAUZsBA3Vr9hPVnbVsQBBSRI8fT2+4B1gRdyKQH2LmDkrAvQAS9zQJGdhMwBp48RL3OANFKEbmlgQBG8IlTA5xqwkjdtDiCsNfDXbRggQIAA/x4/+SMGLyYYGzsAAAAASUVORK5CYII=", "prop_toxic_barrel_leak.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAkCAYAAADPRbkKAAABLElEQVR4nGNgGAWjYBSMglEwCkbBKBgFo2AUkAkYSdUgISLwn4EG4MWbDyS7BQRYyNHUnALRlpLmyDBn1n6c6oiVr53zh4FcwMQwxAETJZp9YrbSVH5ExAAjOZnYWO0XQXUnGbgYzBm+EWXm2Vts9M3EIMdRS505kZ7EBYj2tYiVCEbxqZEnwnBj0hswTSyAqQfR6ODNsTckxwIjqQ7H5VgjZ36Gc3s/gmkYgPGRaWzgBppnSPEII6khTsjRhAAuz9wgM0YYCTkePZmQ42hKPPOGgCcIegBXyFMLnCMQE4Q8wEQrx1eI9DC4iZgTVGeEZh66fdiS8vCOAXSAXuThK01IBeew5CVSiuThWwoNi3qAljUxLvCGFjUxNkCoZCAFvCHD0XQB1PQkw3AGACUEudsxR0ncAAAAAElFTkSuQmCC", "prop_wrecked_car.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAA0CAYAAAAddL/hAAAEiklEQVR4nO2av0sbYRjHn4h0CClIOEQlBDEiUUpx7BChk6NDuwSn0qVQnP0jMktH6SRZ2sGxQynEoWOHYkMxIiK1DSEEKp1KrzxnvseTJ++Z3OXMGXy/ILn3vfd973k/9/x4EySysrKysrKysrKysrKysrKysrKyui9K0T3UYXndff+1Rc8eOX4f2lvVL6GYTNMdVCGbcTcWZvx27UfHv0b/268XkV8+Q3rxKOfqfoYYVlN0h6AVshmXNybhQehjmPzH4zA+yvP0C5DeOFEAX3RBaG8zeZ1s8318RgWpwzUKxMRyYCGbcZ21J3671WoSNU9J9nn9x5+JZpfIcWavxzDA6TZ9myn2j+vCDRveEn7YuVNJ57hWFwoDgtAHSXgYp8fIEA/rjQxtokJ4Q8CT4NCv+yQ8vmZIcowci7COEs5RICZShWvd/GWCAAFardkhZ63YA3yVQ9iw5qgKe4RJ9BhTYy+aUcC61ujwBDg/lA1W60LTaF/ROJQIwA1stlPvs0QWA1atWzSo075uNztECzO0KucKr47DExMDWMhm3Eb7KiWPJaz5Nzk6KtdTMmnrMRLaIBCAZZrLYhtoTBr5QaVq0WU4/KnvARrA9s3NZd385rZ3vX76gb4sbfZ8QrIfKv85omq61DOOtfvpe2qiPPDy9YUHkT/hbbgGXO5rlOv+99D6zz/07m+e8itFOv9wQFvLvdVPQ2FJqACpobMqRC76xgEzFg+kLkgJT2o+/YDY0xrf6/R8+tyDV1gpBsJiFefSRg/jfn4BJqDslSzMk2MP9vduBWYsixayGRfwAj/TDzxPkx7DG+YNaukQln16HkOCGNwgD47bK6fi8MBG+yoFWFJov3q84MODeDO8YdkHIPAekwCP7/NcvuZ1AFTCwxryhVSerrj8t/1yJ9KPEFqxvI1SLusZw5AQnkjy2stkaOqigc8gr5K5D2vJteGdLN2vixPsgJ1RQzw1KritZadvI9JofQ3jkZtYMjRZWEv26bxmeibmQBqaCSDGQWFDPDRArqL8YK6eu6W8v+HDk5ZXKOQmtdGyrSEGgRr2ZUgomB9UhGAzX+987v/GsrM4NTTMoXMg5w2EKhvFsKrpkv8WcRRBXpICJBNMrMeSG5ZQAFeO1c+SHqVt0PkU40weLOcMkyeHPgf6b+OIvLA1HWTX1WHXM9zgAV7xUOP9fKmhY20yV2VI2+IVGawj+j1oS9f3X378Zdxr5Zhofy49VF4cKQdWnq54h1YTPNmWhUR7nel4Ij1Gh3FQvpWSa2NNk/fzPRPEVvMyNdYqfNjNiyaZvj2gra91ZTRV3qCXogvG3tm/Plv2nmT6vLVy/Dt5gNorZTuoWgbdH9QeNB8yAURxgOI4VMcGML+47AYZbNqkroZB0AYdW0xzg3JbWO9KHOD52UlqkFcO8rCwwnqjhuawimVBZ3Y+sNxro/FrTJDCeFqQ97JGLQ7DKrYFHQPEmwyOEvI3pYGJ/T3wNiUBBYU8rscNDkrkoc4NIb+79nDgfEBMCppUYgY4IUP+rirx/42xsrKysqKJ1X+/GHT5kZRu2QAAAABJRU5ErkJggg==", "tile_asphalt.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACHklEQVR4nN1ZPU/EMAyNK3YEKhVsLDCAdANCTGzszKz8MlZmdjbGm5BggIUNVE6c+AUg38k9X+S0Tpo2gSdV11y+7GfHcRNjEqKs9n7wSSnDRopJSen9w2P6a1Ge1e8wtiyQWPE1vL08mbGJgBwUT0kEpFZ8PqvNVlk1v2MTAakUL6tdM6s/VOMNSQSkdPU2jOURMLbFfSzvQkwiILXFJUtr62MQAUMr3mVxjUdwElBpe94+RBQhmRsKYAuBQkplUs6uJ7iUx/aTk7OFct9fn827NB/JE5JZFn0VJxwcTdaEIouhhaleN9eyPXf7y6trc3d705SRCGk8lO30/MKLCPB1dXtNutZo2/4e0g6BXkBEkEx2f/6LntO1NECreF/Ya923zIHKoQdo27fFCIiluI8l2/qH1msgEQG24jH2aQmucUPzgz5yciIKu1I7KAU8V3S38fr82LxTRMeH5nPtFr67h0tOF4AXJE8ItYyrHw9kNBfvNySkJVDwBliBDzacPtwHMW1b1AU7znAPoK1QGj8EK29b6tdrG4wFKaMbcq272sDYOX+MaM7Hk+CTGoPPpC4ifJVCAXl210WsZnz0lNWy1X8TgLZhGxEhhxscGs8a6uQITIKTHyml1fTL5nO4jYhUGV1WR2Kb2ztRAp2NbI/EfGKE726g/ar7M8fiZSanwdlejMwHtng2V2Ol4An/9mqsyyNSKJ4Fygyux38BSdEKuIVR3QIAAAAASUVORK5CYII=", "tile_asphalt_yellow.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACwElEQVR4nOVZv2sUQRidT7aykchymM40NpYWIgiChQiKCClMJ7ZpQv4BxfwDwcbWwiaNIIJgE6s0omkELbSI3cl5JKTQSlDeXt4492Vnd+d2bmfVB8vszM7OzPt+7TezxiREPlj8hSvlGrIUk5L02XPn2VTUx6OhdL0WSUx8Cl8+fTBdC0L6QDylICQ18YPxyCzkA1t2LQhJRTwfnDHj0ddG481TEJLS1KvQlUVI1xoP0XwZnm3smwsrw2iCkK583FfX7b7n6zf2zOWLp8zOm0Nbrm3+aC0I6YOPV/WHxjVpzAuBEG0EIal8XENrngRJ7tbKPfNi60lxv7u1WAhj8+VS6xghsxL3aUy3h/q+q/GHz68XpB+tn7SCIKqUECKIE01ydUzGCaEp4PPH91N1lpok+7H0Ae9D6yQPPLj9ys4LrcMKmoDrbbLXEB9xDhQLVT6+fP/0lOYB3AOo47keJ1YeIfMmXhfVCfo026+u/ix9rwl8wikTRNYmqpeR0/2akJ9YAO4m7agv5LOTdS3ELR3Y3adoAfg01hYwcde0GdQQ4Agd1YHY68F4h/vfDAWQ8eboeSEITFjnYyFRXfs0MznWofGJho6PF5N8mQtIWceQWKAzOLd8/Tizvo36xt3vVvv8rofGm1CL0BrXz6Xq5dDYQJLUKnwd5LUVbA/vHCPvyx989Tqg/7udbS/x1omQhpuaajCNDfHxNr4fLREiMBAuDMzBCWjXjeplJazh6dtL9h2OgZLmqVFHXkV1Ox4urtfMezO0e5STu8mKawnUOBaLTPDKtZs2n3cREgdinxOIaQHXNVwrcDO3P32nv8tcdJukK8YBiZgIqIoRTX05xOdjngyJiYgYqXTVLrNJVO/doehBzUnPP3UoWiWIWc4C/9pjcY3QvUaXP0Yy0wHK9hr/1a+xumCZgngvkPfg9/hvBRxTG3YSMHQAAAAASUVORK5CYII=", "tile_concrete.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACX0lEQVR4nM2ZzUoDQQzHE9iHEIsf7dGDFDyIr+FJfEDx5GuIB6F48Nj6QcW3UGYhGtIkM7M7O9MfyLILNfknmUxmF6Ahy/Ozn/DX0oeuhVESfXV5QY/6+9XLK9b2BRsL75nPT2CzeYfHp2eoHYiupvDZ4QEcH81U8eFK9zUrAmtl/ONz24unqwYFg6hREV2tUifRlvgAF1+rInBK4TKjOchKCffbr28oHQgsLZwyF+Brm0PPZXC85cEpuTRwioxrogmrImSPCFeJ7CElAtGVyDjfwkj8YnEK6/Xbzm95kHgwcsTTcmAVN7hH4FDhlqi7+we4vbk2/4dX/jGC+BDoknMElt7HKfMUCKsSAlYP0IIRMq7Z534QwXZqIDBVeIA7pzmi9QBZEWMrIDZHcFICgSnCc41rjZAHIrYL0BqnjOcMUVoD9gKBuZNbrjNSrPU7ek5rXNsVYlukZdfrESiF5xIz6jnD7WnNLcd+jl+8InBsAMYyVHgqWuXwSsCcic5auznGuRNaBWhreah96Ye5BCQUiNC0NKOxBuZdvX2czxGe6FT7hHeGwB31RiA4sQxw41pXt8TzzGsDVWolkP2UwxNCArGK8IYYEs6xunrqHGHZ5cGOCc8KgHcG8Jyw5ghLPEdOkFZFcCYbhSXarsHLTmZ8SOYteI8gxpwKEUYgB6eA1YhKiCf4UDP2OIxQAC0QGkMnyJSJbq9eic3EDO+RM0HmnPJSQZiA0pPllG+HESbE2jU43n5e47U4QgVS5oip3/42/TK0+hfy9yFUmyNafBpDaIDsES2E7wXLPfg8/gsz0AqR6qggJAAAAABJRU5ErkJggg==", "tile_dirt_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADZklEQVR4nN1ZPYsTURR9L0UE2UJTmEWWoFZrCoUFbSxEWCy0t/ZX+COs/AnaioUIWsiCWAiLQkCLdSuVsMhqES1EcBvljJ7lePPuZDKZj+iB5eW+eZl9597z7r0zCaFFDAe9n/hrcw+xjX9K0jc2z4VTayfC7btb2fzOeNL4fmIbxG/d3Awf9j5n5HW8v/WmcUfEpiNOWPI636QiYlPE33+chNMne1NrdB7kn73czWzMv9rZq90RsamIW1gFWCUo6jwanTqyOohfGK5lc4ikjg+3f0cVkQZImjbWwRkARtjIGbhnHVUjVnETbgqkr1xcdyMJMva6pwSbGKmmqnNErIq4gmeYozev45HVs+HH/ttsHUjjnsgBiD5A0phnzqjiaMRFiafIzEpwHkgIpEFYcwiusXzyflTKIorolD3j/d7KIckio2Z3bx2jDWL4DNKqICXPnIFxkRwRixLPi7g3ErRBSKOapxhGnEpgpFUFdIbNHfMoIhYlToz3v4bB6rG/1tmz7s2zrvN8sz+w6+ksguv4HQXm1zcuZflDS2nRPiIWIa6ksbnno3fh8saZqQSWIqO2RoeksPnd0Ysp5VDmqBo6kpS207zu9RV5yTJ6xG2kaet49dr18PTJ48wZcArnadNJqQjPclbe8Xo9/h7OD44mbQ+eIqISR2LTTXtOKEJm1pi3XmFlbdexZHrfT91HFdHRRSCHyNmIp2yS0PVq8zqOh9o2V2B9yjkc7z3azj7rcfNyS16V8ZqzqIYqQeWelwC9eS/iXK85pOyxsL2DKiXVcaaqQ0c3hgv4+zT5lnk1pQAlofNqqxKsQrher6ecRBtJkjb2pCMB8ncejA7X4X7sE+gkkCe/0mVwnKMAm/A8aASZOO08+4WUQlgK7TMCoO00iZcqgxap6lDHyOoBBQK2TwDgAPYR3JN1Kr+/cCPkOaK70svKDpEqjbNyiNc8AXwIUhkXyQllHo5iKAFNloAXUWIeJTCyTMSMeJ4zF3lzFMs4IOWIeUgq2AmSFOWrsI/bQNmI1/pCpP9HEYRVwpeDbjjePchVCsqXQo+BdVLrL0SqUoTXR2iVAOp4SRpDDbBVgyibK6qMeCuvxfszFEFY+599LV42RxB1RnwpfhrriyIILYH/3U9jsxTRZMSXCsMl+Hn8F0vKUoeWRuFvAAAAAElFTkSuQmCC", "tile_dirt_2.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADj0lEQVR4nN1ZT2sTQRydKSEFyUFzMEVCUE81B4WipaAgQvGgID15E/0UfghPfgTFm3gogh6kIIKHUqUHD62nKqFI9RA99NJelDf1rc9fdpNsktmNPgi/zOxmdt7v/06cKxHtVv0nPmXuwZfxUJK+vXzenW6edA8erYX5rU638P34Mojfv7fsPu9+C+RVPl37ULgifNEWJyx5nS/SI3xRxD996bozp+o99+g8yL/e+BjGmH+3tRtdEb4oi1tYD7CeoIgZGjMxsjqIX2o3wxwsqXJ1/ciqsDRA0hzjPigDgMQYOQNrxqgafhKLcFMgfW1xPtOSIGOvZ3mCTYz0pknnCD8p4grGMCXR2fuRfG/NHU+uY/76jZvu1csX4drX7r5r1GtBwvoASeNZzBmTCI2ZUX5EV8RmaBluSuWbzZ0g8QFJkAauLpx1bzd2wndIjA/2tpP1QRrksTa8gB6DeU2YuI65cULD5yUOiQeDHAkp1Mph3Om6VqseJHBl8Yg85np++/ueOysXw/r6e3oFlGWrBcNqFI/weYjT/dS90yQ2j40+WX0fNg9FsaTlwcH+oZutVROFMyQeP18P6wNpuSNPjvDDEifUlQmSxjw9AJaDJWmVcQDLYz1VBhTAZ84vXA4hpKV02D7CD0NcSauFafHZuXNhA7A4XBz3w1qTBhSh0HBgGKT1Ff1Cw2cRt5bmWCUzN61BxCCvYUEwj3w/rLoLrWOpnSaR5RFeiTPJsHRlKQHQEmZdH64aCwwBVbbNTWnI8ogZvQlEkuxriZmx1neCGTsmsD9WCyZCWlb7DiuzmrOKcYmklqq7p43TwqIID8hSMi1sS6P2DWnVoaKLqCLoWmkks3ICwJodC5Y8wvburSX38NmmW1lqJmHAPiFXEsxTDQgS17oPFFEF2C0SrEbEMI1Rpd8DbWj08wjEJktguC4d3LjAc0P32O71uL+aMLedNEyDiI/VCldr9VB2iLTSaGN1FEWg5HENrmerkMporbCFlk3A5gJbFukZ+j7AMUnBwphHRtd1dcy5sK544DgnRz7vD7IU0U8JqiQqRS1LhSjUY+zrNjCqxaMeiDRMkrJKQMd2ovqnk7PA/ShfAF54kN15UkRom136gcgoHtFPZr1gETEOSb2LAPtOQQwbJlZO0uKlHIs3BngEYcf/7LH4qDmCiGnxqfhrrCEeQeip0X/319ggjyjS4lOF9hT8Pf4LYdNl3QGXD7kAAAAASUVORK5CYII=", "tile_metal_grate.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAD7ElEQVR4nM1Zv4sTQRSeWVOIpLBI4cERrhAunv4B2t5f4Ck211sIItiJgoXgYXcggRT2NuKPv8BW/wD1TrgiLIGzSGERDgv15Jvk23t5zuxOkt1NHiybeXk7+97M9733JjFmidLeuHyKa5k+JMsMfLv5y9x7+HipC9Go82UMcm19w40PjDGbk/HNO7umt7/nvk/7R7Yun2wdL5G7y+AR8Ic3r93n40F/St/b3zN1LURSJ9S501d+HmbB326kmR4CfZ3USKqYlI4jMFwHFztOj8Ahcvxn51FwHjxb9ULYMieTTmIXEaiGutZjET6OzmcUACLe/m5n9tDDZvPus0qokZS9493rTef0rWst9933V0/dHQFDj0AgXBSMsSikAIOnPe5YsKqokZQJdezU4Y+TDOoQOC/HFJ+uSE/qlEkNW0ZWJ0R9UCekCXWtp31edfDNX1bVSObdcewAoUuIQp6sD6eg/m144u4YS70P6hDO46MAFgJjvBcLSPtFqJHMGjheRoFj596/mLL9euOBu1/99DKziZUQ/LVgTl/1mIcadt4GJpS9NdSBiOeDVhTUIXn2TKjyvYs2VElMA0OoIzg6QUjL7E2uwp5QZzCENAKEhBohbS8bJywoqov2h9SQ80Afg4gkpoEh1HGXkNaQlXYhIUX4LKCMz6RMTHWQfkmfQs/m5QjLwKkIQUs2MFhdfPZlaU2NEGWAhHdfhoWQZs7Zal0opWoAcd3+34waiVwNGMnsKrMuJpRQpF5XAVJDz6MpA6jjOVLG915WDdihmvigHlM1NFX/Ow6nZ0nitOsW4gxOhPTWJNvHNDUYd9AJDuIaG7cQO7vGTIJxY2VP283Js+PqMx2Mb345D5Cg4jW26Nzug67M0oQokhP0RdUhJnvHnBFCjVbITx14bhVI+0cWFx5kSSOEwFu8jA0Pe37ymZDG97Cj0yFq6Cogq4zvjEB75ASpx1hTDP7jYjwzN0Lp5EEsAmsqRGd5mYWZzXW29wme61waBxKaG/NhDs6j7X0SEzjFmhmE1CDsCTk4ByQABbo6kBp0LK9q5J0pYrP9rGeCZJYFkIig04A6HCQFZHWAMHgJddizgZHQldVEVh+IzuqYj/PMsuMLLYAvR9z/PDJSdCMkG56int7XWEm9HIMKzFHzBE6xpgSR1CAFSBPsYF7jVAT1kL6sX4asKVFk+QREeRSWHaRcEJkjZNmCcFxV4JX8KJoKarDdlHTwVQ9WC/1LEvWQRTheJNZUKD5q5B17y8jqK/3HyJqgBtFAiOsOsK4/RhqmBtFnje3meCAhj4anNxiZYzPO6qYmsWYJ4jtrQOoMfCWkvQJ/j/8DW6Yj08RrjbkAAAAASUVORK5CYII=", "tile_toxic_sludge_0.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACrElEQVR4nNVZvUoEMRCesUxzzTWC3BuIYnNYiQjXCTbiO9jY+gi2Nr6D2Ah2goiV2ByKb3AINjY2aZXZc5YQJtlJNrt7fnDksuzO5pvM304ABoTZMD/0G3INOMRL97cnFemXr69qPh2Pq//2w/a+HuybOJOOoU9FrPXxEjJzJm8mZnktMtK9fbkGdimcSJB5vxub9bxd2M4tArsQyrvHu+pitGXg+81WI4PnNErYtMt7H18XxdeLXe047Z6vAJd0CCElsDWQ/JKKwBJCfP+W4JNf3zPw+WTrUasMkjN5XmaQEq6xViKPL3Zlc9eSp9GH7ybudX5fiWCJbUydFuIvzvVxiYRElhGzhJj7tLEILEFcixh5RpNbxJCjCEwNbppAlkq6lDLYUkgRBE2wxDbBLaSMmG/nQhMw/VSqqSMwNY9ryOdg52AE84fv4NyFrwRNHRFyDWxTuTUFuPOTGezAMczhBi6u7xvlMenQ2KSEJkgFFYZM3Y/mEnk3OvvkadE+YuSk+6XnQ+Sl7CONviKQFUBjas2uUUITaY0yZuNp/Z8tiZUQ2/nQ5rmxAVN9P4V8Wwtg4uRGtQy4qcaz09v6mmSpkgVI2QElctpYoC1ymgKcpAyJfJMSQlAHQR+SRYQqPG0W0LoBB1GNBYQsITsN+vBjhLYYKlEP0POXV0f1XCLugsjHdrx1KQxE7HAMqZBSJCOUIlPL4c+7ZbuteCmc800Q+xDi+oDh1gk53wA5xBkILcD1A1tEytegZAGhcjckL6XmH7QhMlL0A1LKWwpupTpDCAURS58pHaEQ+ZTgtpJN0ZGyJ5jzVbdS5wL2wyL9aMd48QQmFRv9PF7J+JPXxVoRekCsxJa6x32cBwxyNGacBiaRdq3Dnfd5NIYwAKRObul+/7+A+TszHHINv8i2iVmen+Z+AAAAAElFTkSuQmCC", "tile_toxic_sludge_1.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACvUlEQVR4nM1ZvUpsMRDOWKax2UaQfQNRbMRKFsFOsBHfwcbWR7jtbe47iM2F2wkiVmIjim+wCDbb2KRV5sh4xziTTHJ+9nywnD3Jnk2+LzOTyRznlgi/7t/xs8w5wDIGnW1NG9L3i8VX285k4m4e54PPB4YczLLaQwsBQxFHYs8+JH8X5sH5qW+uzf1L6H1+MCTx1U3v3p6Cify3vh6FgKFWHMlriEUhMfh9X0JAHz7OJ58jbxWB2rqOEdB1VM+RX9vz7vU2qCLEbkL3/H+md59jdWER0MeK15CXRJDIc7z+W7S2CGhL3DpZIp+71gCFQNRYxEopcTR3JB6TR9SQj/vpnl9TwPHXDifNfGoyS6g19TYrXQtL7MBriUWsWFZcGzSGtIIlZr69v/rtyhE/R+NLMYMsorHWjEWA1IgPUp5OyYkluks4Pzn4+v7r4upHP5J9uH4TSWN7iQVoSAVL0BIYnpHFIsS+nyK/7Y7/E3KXqggaSASr+Uv9hI3w2c+FACJORLX0VLOAnE9rFpAinRKhZrcgEaSzBuAX8nNaeU66jflryJE/mOyofWenf01jSEkVzyYpkQJrRmeJ/imkfF0izl2Hu5BFCI286gIlOX0u4KTEyAU8cheJfCyCJoC0O0nEk9tgeAmAH3yQ/CWX7HBIPloS7flKa+1SshQvDs0fiWvpMmTZMNeY75ZF4dgSuAjc3HlwRPF+/zlS54Irn8orcB4lx2dwBaBtkoSwHFxiESQzz5m19D+ImHzNmQBcDyUuTYSUj1tE4P/Hybc5FYJrAcsZIT4D1FrAqI7DWupcUgnifs6JW9yqC+K9lMRmTAjLbmEFiYCVIMToSmI510iVubSV5u24nXVVAltqWVxCSoQ2lZ5Rvhi5Z6/CUplmH9XfUbwam7E6A2Go+v+oXo56pUozJPFRwI/g9fgHlRdxD80Op6sAAAAASUVORK5CYII=", "tile_toxic_sludge_2.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAADDElEQVR4nOVZsYoUQRDtmnCSSyY5kP0DUS45NJFFuEwwEf/BxNRPMDXxH8REMDsQMZJLDsU/WA4u2eSSTk9e79ZSW1T19MxOzyI+GHq3p2em3uvqquqZEI6I9kF7v3y8uD+mDXQs4uddF67W6/Sff8ebOLs9NOfDMNtMOoc5haA5ibeLdq8/rqI5Hh4BfP+1qm5fU9vVcayeBJO87mP8aWM65ogRVOOmbDSIW7j7HYvFOHnUhtuv62pLo6kx4zyDHkBq7zpFns+jhVinL7o0poZH0BQ3YaNAWpOrgSk9ojnkYp4RnnGesZqY2iNozEV4MFoYMhanz3xPuf0Re0VgsdEufobRdQTNTbyPvCeCJs2txBghmiHBDW6nyTOZElLWuLPnJ2arx8nAKFsJZB3Yh2VRujQod5JvoosY/XAYixnjlvHh48vd77dvvpjkr7/d7UgD+D9kOXiAhyC9oqjKFVRUUqunvq0AOfKMd68vUnsWXu36rsPn1L7/dLk5J0hrTCkC8DBubLOEoD7iqT8z+1oEi7wW4XJ91Wv8oSJYxZZVYjfs6hzguIBh0l6F5rk/zzCTHUPe8hDcnw/+n4NVbGFicUi+ZM08BlvlqRd9LTEA9gYAwlhrXoPPaw9gWLFGwqtDmA97AmcL2lNpK4QsY63U0yeCRAlpi7xuPTFKyDMQC3SaJGugFiIngiWGl+o02RzgPYgjWDpYNn0xIUfeIl6UBlshhCbNqEFeX+95AouQc/vUZgojKjGCA0ZuyyrhBSiQuOjO3ecgTuiU6sEjL1+ylFSEFAYgJ0SfCDIg5lKkVzSVuH/JjB+0G4w3kdKx2lRZDGsX6EVpi7zul1FetnxI4LlY48mmrX3Vt8NRCeFlBU3Cqg+sfou8914A5FHYjH03QGECyF1iX5aQ+wMNuL4Heb9caTsUFCaElTUYh7wpkjX91N8PKFTA0KxhQYpXgziDQkV42+k+EWrO+FE+jLTCI+Qew6ssS/bx/+ynsZDxCLzSAuYgflQst9vR7mmXWrk9/a+wHPDurhb+AjVteEbHHlTrAAAAAElFTkSuQmCC", "tile_toxic_sludge_3.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAACr0lEQVR4nN1Zu0osQRDtWow6MZlEkP0DuWIyGIkIZoKJ+Cv3E0xN7j9cDM0EESMxEcU/WASTSUwmVWrWktqyurvm1SMeGHpnZre3Tk09Tvc4NyH2t+fvftO/T2kDTEUcx/uqWrlev9TZ7YHcxCVpibIo3M3jIptd8FOI+7n/+lwv6mwRATmIS3J4LkcNORwBY0xKhS1ETMP6H+/enmp1fL2sRnPEbOgn3lT2uV8hjyRSo0YegSPNh46lAjoUYIhJ0DAsXs9+aTQHkeyCHBEBYxFHcKM5Nva8e72tv0YNMhK0+eZ3y1baxxHQJ8c3joqosRxINoWUM4K/u6w6t09o82XKv8Vu2Eg5DuUEC7o4YmZ94nggcY18rMAhaToQOwfr6mh1Et2XY/P5qGjsI3st3KBNOws9WY7zf8fBe2f/r1bOkfzD9Zv63VSNCIGn4VbtkzUCYqHOi1uKPCe+406+3X9wFyuO4E8enRBzhoSlgFoF1Uzr40hcSlfel2PQyMvrkiydh9KCw9o9OCiCNR0BUqun1FsoEvpEQAoyMiytUxNVWkSApZ+HoFX5v6eHrWpAX/Ix0jHy1C2gq4ZPtTge1lqOy7CXOCzKoOOsTpD3tTYJbVdxbZxghXQGkudphOlDToiR53bx62h7SB9AzLBYRAxFPuaEvhFgEUZgMS7kiJjGHwsa+T77CDPLn+JEeKCwoMk1PUDG9ZGzGmLzcuWJ9jU2fto76mKoLJayM6UMQ5GB3QLznPKb9/e2CjDbYiiWGimlaEmPtpEz2XLYIp3H3A/AMEcMsXsMbkBoxbKLE0Jy27K4+TGboqWiLGO1IqbccK6hiWfZFvctagRCkh/jiU/2YsQpNUIDtdlf8WJEIrXWyPlGiLDmMoKIlUXx7VVZ08dfqkle1rqpQBswU9rwAXWPeXr6HMz5AAAAAElFTkSuQmCC", "wall_brick_ruined_ne.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAC80lEQVR4nO2bv2obQRDGZ48rgjmMuMqFiyBSmWD0AH6GFKmCK9d+gBTBZXDhB7jalUnlQk8ihHEljIsUqoQRwqSywrdoznPjOwspCrs6zQ+EdN5deee7+bdn7CgwV5cX85tft5RNxpWfz/ID6r1MaZDs++vTb1/p+4+fbtO/31FgTg7z+afOXmkohOBrKQoEGQzvN77fhCJg9PRcGusNXYghwTi8pZUCaEOlGAy8ol8UtGlSCgwbqXMA4h8MFuMjNd4qD8gm4zd3uy405JxNcHV5MY9CAL7jLARyAIxnIQDGMAebXicXnH0+9Gvk2n5RhA8BBgaDSjKEMB3y7xADc0ZFURFmVWQemeUHcYRAk2tDDK4ILJD+vC7whGwyDi8AZ/2mGJehIcf/pSRibX/hSQlFwrJkp4WCAeuIgLXoPNmTEoq8D6hzdxYChiwTgcePTs9Kt5dCOgpM7/jIb5A3JfsB3SIDPWdZi4zvxzlCJj/ZaicUcR8gGyIZGro8Lvvu+5vrynrpVSlFQl35Kzeavx6MuE/I6NUIGQY4MeJanxz5ZKnzi6PAwEX5LjMwnDfKG8c7N0dyXAqDOdd3vx1OmF/Oz70YaIBYSBk+vD6hwDw8PNLt46S8lh2gfB6gk2Fd1cAc9gauEnV3ndf3XqbhPYDZz/b8xo87H97crbpkqOdoj5CeInOMTrIpRcJ09uxvxpDIC9HNq4cizglNhuC06IVqOD02CeUoUrRHMMvuKNAPVLRX8PdEkQPe8wi8hk9/CK+mGNY5QB6qZAmVpZM/Z5NxPCGwSmgw/nnBohzWeYQc59BAKEkS2hLYI1A1pEfopqgu42MOC4PwkCGS0pahPUKjH6XBcFlCdfl0tOVwsux2P5bNkkQ3VLp1dtQSVqkasrw6ahlSiKY/sMhQcdRSZGi81ys4ajl1oSE9w9GO0HTWSGlHaDprONpR2CMMwzAMwzAMwzAMwzAMwzAMw4gH/keH/0VCO05CO04SegOGYRgGheMvCPwIVyor8Y0AAAAASUVORK5CYII=", "wall_brick_ruined_nw.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAC60lEQVR4nO2bvUoDQRDHNyFFEBFJZWEtQXyHiIUI9inEIp1vYCGWweLeIK+QWpt0Z2FlZSGHdYpUEkTETpm9ncvc3Fw8g2HvzvmBibm9HPufr51dSMOsgeBw7wvew/au/dz7nNr/4T3Fcd9cXg0bxiPNdTwUxKJgLrq7s5GMm8nYBDfX1li+aK3joSgaxEazj+S6FT5n9zzdmlpFQEA8iuIxFS62X1PGoffUJgLC+wfTcwJH804iPBYaiwbgMxrGmBfjNQICIQ8HB7u/zk18Dgjj4qV0gDHftP4yD8H7AIY5iOSi6Xg0M8a0Y0N5jYCR8xZ6cNXKTKs+5jiNCBgrg9czBuh9TmPRk3HKk0WRDEYLYGb9dyxqQAlWga6QBkUjgRqMrvOSx7H45fUJ3laByE0suOnbSHiGiy4iigDGAkPAOk9FSTUAiA2TLozeIiB0HrGT+oVoCojn3sY6QIvfogD6FZ6pAXxS+2eDQjkKnkdhXBQUPjSsFOo4XrpOMISIgIYGi+MyhIhJen3WFvN7fOd/phOk3kgm5zYsuGvLGIQYgIqmnSA2QtwoZaAFL3xiPCxTyyIulcSDkjCbDq7JwU2QuDN0myOvBug5j/GqTIXdCV+WIkZqefE8gHN+628PIC6DFDpxEJWE/mQsRgwV/lOoDx/j62/vH14PQ1IGoDnLJ26FzZxwZ5i8iIGQztsAlUk40oCX05Mj611cx3HS1CiI5FV+9MWfU0bhmRoQkp0beo5HRKY45oQ6er/MwpceiIxAeLtDPGl+FJ50ffNye1w+D9iJlyNe1alweg8YhqcGrepVEJ4ywKhAqNN1nB9kVMnjuTVAak6qtJz9WQ2IXAeX18CAgeJQn1Za+NI+4CI5xV2MVTXHC+8FQp7jJB3qKFzsA7qsc6uzcLEGRK6B+Q/CRQMMa1DVV2Jrc+ML/nzPQ1EURVEURVEURVEURVEURVGUajNY4Zcnlf/ZXJVomn9O0/cEFEVRFOOPbzRXDhfW4D3IAAAAAElFTkSuQmCC", "wall_corrugated_ne.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADPklEQVR4nO2ZP2uTURTGTy6mlCBBSoRSHEpx6iBOdYlLB3GS0NFJXFz6MfwIXbqIk2PpKA5dmkVxkA4dJUMpAUsooWRIoJHnTZ7k5HjfNNbB2+T8oOSe3Jv0Pf/PbQvyH6k+Wum/elzJ1j82XsjXw4/SK69KdfulLH07lOPzS3n3ZC3bA7F9LR9dLUux3ZRntTejffB87UH2Chl75NOHvUKQhIAyVt5rXGdrKAQZCmood7dq2ZrfAdl+H42I78IPuCeJgAcqtgce48NZdteD7J/IWMGjz9n66c8vcnrRGSk8/vxy9l53axAhiCaAs+D1291+chEweODaH3t4D9EQ8yoU2qyURjLWjAj7+f2T84loCJIIWml4izKU0CFrI4LQq1zzvE0ZQoMFSRAorxWGTI/SIID1Ia8mAJ0WrBHYo8GCJAgeFh7S3mMRjKWAjhbKPG/PWDlIYlAJtL6YstyHgkwBpow2kDVKXmENkgg25O0D6zZH5WwKaGX5eZzXa/u7giSErdr2oe0cwJqgOwDkvC7CiNEGDpIo0yKAMoCsq77etwXRRkyvvJqmAWwbJDoadJHTHs87DxABuosU2800DcDpjh6P9fTYoDMtegCHILZVkKwB2KdjHtWy3ce4yxy/qQMkdReY9a7ALqBl3gUw+yPPqxuTBupuj2+AtisESQRdyafBHNYhr8dgoPepsE6jJFPg9KIzuq3dZm64ae63BkkiBepnrUL9rJWty/dL/YNGSx4uhVE08A8aGhhJe1xHBK7HDHmkRX14Jjs/TAtLkERoX3UK+PnVvZb3389GSuqowFpfZ/WeLnocpe3dgNDAxRTbIA2BaIAxtMJ6HZOJVlZPf9o4nCOCJIqOCBhjFhgR8DBSgEbKM0ix3Uy/DcIIeD1oSB+vqBExoDQjwnYFQI/rNgmSN4A1hAyL5c76ysR+TGlLbDAKcsewNeJv0kIDuZdyDfiXGkFlp3UNREzxLtSA29QIpoNWHu/F5oogc0IsImaZLIPMGbpGYKDKy/+5NUDeZKmV1h2jIAsC7hqsEfxn6WaltDgGsIbAHHF8frl4BrCGcBzHcRzHcRzHcRzHcRzHcRzHcRzHcRxH5p7fgjdkYFJm0IwAAAAASUVORK5CYII=", "wall_corrugated_nw.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAADdklEQVR4nO2ZP2gTURzH3x2dREqHQpdMYsHQDG7i4uQooRQKWhyyujiJBQUHt+JWEAcXpygIJZQ6uImKrh0a0j8gDlmEUIKI4BT5XvI9v/f6EqNLX5rfBy557+69cN/fv/fukrgBbz/s9n49rbnqq92kVin1bj3bcegvXpjPrh996WTfW3sd15q75JZX19zyt7qrve/PRx8cPH+UXX9Y6rjm1buu8bqenUffn//myT1Xvdj//fvvDhN3CqQqnm18s7+xvZ+JpCFAubufG4VtAnE8t/R5M2vj0PkxkeLj5Z0b+Qltw4MQBBoLawUREMfrISNgLK/jwHz9vagMQHDT69X+DVMkQRsiKAhieB1zkA6AxsBYfz4jIloDNBbW8pymQfSGVQDajAikCeaCkPH0N0LXozBAc+DRF9eKAxjiuI5Dx6toRABFcTzbHK/zYyFVr+AG4U3Cyo8QBxDo5zCLHHNcI0RrAICROD7KFAC4WUYBBWlaqAAaJGQgRlSoQMZEqh3esApmCtCjPMe+jmdfrwPO57IZkxFSNljFgXqY0KPq4RA0GAqknzI4pzUlGgOUu/uZd/wiF/I4x3NZC9UErvsK5rKmRLcKtAbruuLfIJc81AeO1zk0iPY1JUhMBRDMqEfBQW6Qoge5sam1+4bIx3f7Xm2uPs6+W+16IWUOBr+PFDty8ZHq1nVUDRiFrgKMEq0pQMM/JlI2WAM0XP20oJF0Y4Tx2DuosdBXwTTQsH5U+wBFNy7+MqaCWRP8rfOwJ0DdbEW3FS6LQFZy9Zj/uAvUQAr7EBz143BZimDo8RYCQnt77Y8Kb5xT42x9PXa3dw7dx/Zxghchp/Uy5EQEKLoH0JD3n+Z8waHw5jmIhvjvP34mOFzsNWBJqvowj/uCQxFAj8ckfCwDULBf5VXkqAiI0ePBjZAPwnzFC3HNYYhcqcxnhS0U8hBN4S5yZtjgTi0P8dKftz0Agn30fQHa8DiYBOEFA7TmilX6b/hV/crmp4kTfmIZXBys0+Ps2mKu6v8VAeviUT+n2YeB8j9HJijHx4qAjSFbU929Mccn3eNDi+Aixe51zrTHhxrgSCo6n+Ymsar/Kwk+Wg+uZ/8HQjT+vIS3z7rwArVKqbd983Jv9vy57HDTxuy0CjcMwzAMwzAMwzAMwzAMwzAMwzAMwzAMw00DvwGdtJ9RcZMIdAAAAABJRU5ErkJggg=="};
+
+    /* AUDIO SYSTEM (Synthesized Web Audio API) */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.windGain = null;
+        this.geigerInterval = null;
+        this.currentRads = 12.4;
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+        this.startWindAmbience();
+        this.startGeigerSound();
+      }
+
+      toggle() {
+        this.enabled = !this.enabled;
+        if (!this.ctx) {
+          this.init();
+        } else {
+          if (this.ctx.state === 'suspended' && this.enabled) {
+            this.ctx.resume();
+          } else if (!this.enabled) {
+            this.ctx.suspend();
+          }
+        }
+        return this.enabled;
+      }
+
+      playClick() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+
+      playFootstep() {
+        if (!this.enabled || !this.ctx) return;
+        const bufferSize = this.ctx.sampleRate * 0.06;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(450, this.ctx.currentTime);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+      }
+
+      playGeigerClick() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(2200 + Math.random() * 800, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.008);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.01);
+      }
+
+      playTerminalBeep() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(950, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.13);
+      }
+
+      startWindAmbience() {
+        if (!this.ctx) return;
+        const bufferSize = this.ctx.sampleRate * 2;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          data[i] = (lastOut + (0.02 * white)) / 1.02; // Brown noise
+          lastOut = data[i];
+          data[i] *= 3.5;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(260, this.ctx.currentTime);
+
+        this.windGain = this.ctx.createGain();
+        this.windGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+
+        noise.connect(filter);
+        filter.connect(this.windGain);
+        this.windGain.connect(this.ctx.destination);
+        noise.start();
+      }
+
+      startGeigerSound() {
+        const scheduleClick = () => {
+          if (this.enabled) {
+            this.playGeigerClick();
+          }
+          // Frequency scales with radiation level (10 rad/h = ~1.2s, 100 rad/h = ~80ms)
+          const rad = Math.max(5, this.currentRads);
+          const interval = Math.max(50, 24000 / rad) * (0.5 + Math.random());
+          setTimeout(scheduleClick, interval);
+        };
+        scheduleClick();
+      }
+
+      updateRads(rads) {
+        this.currentRads = rads;
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    /* IMAGE LOADER */
+    const loadedImages = {};
+    let imagesRemaining = Object.keys(SPRITES_B64).length;
+
+    function preloadSprites(callback) {
+      for (const [name, b64] of Object.entries(SPRITES_B64)) {
+        const img = new Image();
+        img.onload = () => {
+          loadedImages[name] = img;
+          imagesRemaining--;
+          if (imagesRemaining === 0) {
+            callback();
+          }
+        };
+        img.src = b64;
+      }
+    }
+
+    /* ISOMETRIC DIORAMA ENGINE */
+    const TILE_W = 64;
+    const TILE_H = 32;
+    const GRID_SIZE = 14;
+
+    // Diorama Map Matrix
+    let dioramaMap = [];
+    let entities = [];
+    let wanderer = { gx: 7, gy: 7, targetGx: 7, targetGy: 7, walking: false, path: [], walkProgress: 0 };
+    let sentryBot = { gx: 3, gy: 11, dir: 1, timer: 0 };
+
+    function initMap() {
+      dioramaMap = [];
+      for (let y = 0; y < GRID_SIZE; y++) {
+        const row = [];
+        for (let x = 0; x < GRID_SIZE; x++) {
+          let ground = "tile_dirt_1.png";
+          let prop = null;
+          let wall = null;
+          let radLevel = 12 + (Math.random() * 5);
+          let name = "Desert Dirt";
+          let desc = "Dry, cracked wasteland desert soil covered with fine dust and pebbles.";
+          let surface = "CRACKED DIRT";
+
+          // Highway across rows 4 and 5
+          if (y === 4 || y === 5) {
+            ground = (y === 4 && x % 2 === 0) ? "tile_asphalt_yellow.png" : "tile_asphalt.png";
+            name = "Highway 95 Ruins";
+            desc = "Pre-war interstate asphalt, cracked by nuclear thermal radiation.";
+            surface = "CRACKED ASPHALT";
+            radLevel = 18;
+          }
+
+          // Bunker Foundation outpost area (x: 5..10, y: 7..10)
+          if (x >= 5 && x <= 10 && y >= 7 && y <= 10) {
+            ground = "tile_concrete.png";
+            name = "Bunker Delta Foundation";
+            desc = "Reinforced pre-war concrete foundation slab with seismic expansion joint.";
+            surface = "CONCRETE SLAB";
+            radLevel = 8;
+          }
+
+          // Metal catwalk / storage floor (x: 8..10, y: 8..9)
+          if (x >= 8 && x <= 10 && y >= 8 && y <= 9) {
+            ground = "tile_metal_grate.png";
+            name = "Supply Depot Catwalk";
+            desc = "Industrial diamond plate tread with oxidized rust streaks.";
+            surface = "STEEL MESH";
+          }
+
+          // Toxic Waste Spill area (x: 1..4, y: 11..13)
+          if ((x === 2 && y === 12) || (x === 3 && y === 12) || (x === 2 && y === 13) || (x === 3 && y === 13)) {
+            ground = "tile_toxic_sludge_0.png";
+            name = "Radioactive Sludge Pond";
+            desc = "Bubbling mutagenic cooling runoff. Lethal radiation levels detected.";
+            surface = "TOXIC OOZE";
+            radLevel = 98.6;
+          }
+
+          // Occasional blast scorchmark in desert
+          if ((x === 11 && y === 2) || (x === 2 && y === 2)) {
+            ground = "tile_dirt_2.png";
+            name = "Bomb Crater Scorchmark";
+            desc = "Vitrified desert soil from a low-yield nuclear airburst.";
+            radLevel = 45.2;
+          }
+
+          row.push({
+            ground,
+            prop,
+            wall,
+            radLevel,
+            name,
+            desc,
+            surface,
+            hazard: radLevel > 60 ? "CLASS IV EXTREME" : (radLevel > 30 ? "CLASS III HIGH" : "CLASS I-II LOW")
+          });
+        }
+        dioramaMap.push(row);
+      }
+
+      // Place Fortifications & Walls
+      // Outpost perimeter walls
+      dioramaMap[7][5].wall = "wall_corrugated_nw.png";
+      dioramaMap[8][5].wall = "wall_corrugated_nw.png";
+      dioramaMap[9][5].wall = "wall_brick_ruined_nw.png";
+      dioramaMap[6][7].wall = "wall_corrugated_ne.png";
+      dioramaMap[6][8].wall = "wall_corrugated_ne.png";
+      
+      // Barricades & Chainlink fence
+      dioramaMap[7][11].wall = "barricade_sandbags.png";
+      dioramaMap[8][11].wall = "barricade_sandbags.png";
+      dioramaMap[10][6].wall = "fence_chainlink_nw.png";
+      dioramaMap[10][7].wall = "fence_chainlink_nw.png";
+
+      // Place Props
+      // Highway wrecked car
+      dioramaMap[4][8].prop = "prop_wrecked_car.png";
+      dioramaMap[4][8].name = "Wrecked Chryslus Highwayman";
+      dioramaMap[4][8].desc = "A 2077 fusion-engine cruiser, burnt down to the steel chassis. Radioactive engine compartment.";
+      dioramaMap[4][8].radLevel = 36.4;
+
+      // Campfire brazier in outpost center
+      dioramaMap[8][7].prop = "prop_brazier_0.png";
+      dioramaMap[8][7].name = "Scavenger Fire Brazier";
+      dioramaMap[8][7].desc = "A perforated 55-gallon oil drum filled with burning scrap timber and glowing coals.";
+
+      // Ammo crates and terminal at outpost
+      dioramaMap[7][9].prop = "prop_ammo_crate.png";
+      dioramaMap[7][9].name = "Military Munitions Crate";
+      dioramaMap[7][9].desc = "Weathered olive-drab surplus trunk. Contains 7.62mm cartridges and spare vacuum tubes.";
+
+      dioramaMap[7][10].prop = "prop_terminal.png";
+      dioramaMap[7][10].name = "RobCo Terminal Model 300";
+      dioramaMap[7][10].desc = "Green phosphor CRT computer console running Fallout VT-OS v2.4. Displays bunker diagnostic telemetry.";
+
+      dioramaMap[6][9].prop = "prop_radar_dish.png";
+      dioramaMap[6][9].name = "Improvised Comms Array";
+      dioramaMap[6][9].desc = "High-gain scrap metal dish tuned to emergency distress broadcast frequencies.";
+
+      // Toxic waste barrels near the sludge pond
+      dioramaMap[11][1].prop = "prop_toxic_barrel.png";
+      dioramaMap[11][1].name = "Hazardous Waste Drum";
+      dioramaMap[11][1].desc = "Leaking corroded yellow drum containing spent nuclear reactor coolant. High rad count.";
+      dioramaMap[11][1].radLevel = 84.0;
+
+      dioramaMap[12][4].prop = "prop_toxic_barrel_leak.png";
+      dioramaMap[12][4].name = "Punctured Toxic Drum";
+      dioramaMap[12][4].desc = "Breached barrel continuously seeping glowing neon sludge onto the desert bedrock.";
+      dioramaMap[12][4].radLevel = 92.5;
+
+      dioramaMap[10][2].prop = "prop_barrel_stack.png";
+      dioramaMap[10][2].name = "Stacked Industrial Barrels";
+      dioramaMap[10][2].desc = "Three heavy rust-covered steel drums barricading the drainage ditch.";
+
+      // Desert flora & scenery
+      dioramaMap[1][10].prop = "prop_dead_tree.png";
+      dioramaMap[1][10].name = "Irradiated Dead Tree";
+      dioramaMap[1][10].desc = "Gnarled, leafless petrified desert timber bleached by radioactive fallout.";
+
+      dioramaMap[2][12].prop = "prop_mutant_cactus.png";
+      dioramaMap[2][12].name = "Mutant Spiny Cactus";
+      dioramaMap[2][12].desc = "Bulbous mutated desert flora with glowing green bioluminescent nodules.";
+
+      dioramaMap[2][4].prop = "prop_skull_bones.png";
+      dioramaMap[2][4].name = "Brahmin Remains";
+      dioramaMap[2][4].desc = "Bleached two-headed Brahmin skull and ribcage half-buried in shifting sand.";
+
+      dioramaMap[4][2].prop = "prop_road_sign.png";
+      dioramaMap[4][2].name = "Bullet-Riddled Warning Sign";
+      dioramaMap[4][2].desc = "Perforated metal highway placard: 'WARNING: EXTREME RADIATION BEYOND THIS POINT'.";
+
+      dioramaMap[9][12].prop = "prop_shelter_sign.png";
+      dioramaMap[9][12].name = "Fallout Shelter Placard";
+      dioramaMap[9][12].desc = "Vintage yellow-and-black tri-triangle civil defense marker.";
+
+      // Characters / Creatures
+      wanderer = { gx: 7, gy: 8, targetGx: 7, targetGy: 8, walking: false, path: [], walkProgress: 0 };
+      sentryBot = { gx: 3, gy: 11, dir: 1, timer: 0 };
+    }
+
+    /* CANVAS & RENDERING PIPELINE */
+    const canvas = document.getElementById("diorama-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let camera = {
+      x: 0,
+      y: 0,
+      zoom: 1.6,
+      isPanning: false,
+      startX: 0,
+      startY: 0
+    };
+
+    let hoveredTile = { gx: 7, gy: 8 };
+    let selectedTile = { gx: 7, gy: 8 };
+    let animFrame = 0;
+    let globalTicks = 0;
+    let showGrid = false;
+    let timeOfDay = "NOON"; // NOON, DUSK, NIGHT, RADSTORM
+
+    // Atmospheric Particles
+    const particles = [];
+    for (let i = 0; i < 45; i++) {
+      particles.push({
+        x: Math.random() * 800 - 400,
+        y: Math.random() * 600 - 300,
+        vx: 0.3 + Math.random() * 0.6,
+        vy: 0.1 + Math.random() * 0.4,
+        size: Math.random() < 0.3 ? 2 : 1,
+        type: Math.random() < 0.25 ? "rad" : (Math.random() < 0.5 ? "ash" : "dust"),
+        alpha: 0.3 + Math.random() * 0.6
+      });
+    }
+
+    function resizeCanvas() {
+      const container = document.getElementById("viewport-container");
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      if (camera.x === 0 && camera.y === 0) {
+        centerCamera();
+      }
+    }
+    window.addEventListener("resize", resizeCanvas);
+
+    function centerCamera() {
+      // Center diorama origin in viewport
+      camera.x = canvas.width / 2;
+      camera.y = canvas.height / 2 - 40;
+    }
+
+    function gridToScreen(gx, gy) {
+      const sx = (gx - gy) * (TILE_W / 2);
+      const sy = (gx + gy) * (TILE_H / 2);
+      return {
+        x: camera.x + sx * camera.zoom,
+        y: camera.y + sy * camera.zoom
+      };
+    }
+
+    function screenToGrid(screenX, screenY) {
+      const relX = (screenX - camera.x) / camera.zoom;
+      const relY = (screenY - camera.y) / camera.zoom;
+      const halfW = TILE_W / 2;
+      const halfH = TILE_H / 2;
+      const gx = Math.floor((relX / halfW + relY / halfH) / 2);
+      const gy = Math.floor((relY / halfH - relX / halfW) / 2);
+      return { gx, gy };
+    }
+
+    /* MAIN RENDER LOOP */
+    function render() {
+      globalTicks++;
+      animFrame = Math.floor(globalTicks / 10);
+
+      // Clear Screen
+      ctx.fillStyle = timeOfDay === "RADSTORM" ? "#061208" : (timeOfDay === "NIGHT" ? "#040507" : "#0d0f13");
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(camera.x, camera.y);
+      ctx.scale(camera.zoom, camera.zoom);
+
+      // 1. Draw Ground Tiles
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const tile = dioramaMap[y][x];
+          const isoX = (x - y) * (TILE_W / 2);
+          const isoY = (x + y) * (TILE_H / 2);
+
+          let spriteKey = tile.ground;
+          // Animated toxic sludge pond
+          if (tile.ground.startsWith("tile_toxic_sludge")) {
+            const sludgeFrame = Math.floor(globalTicks / 12) % 4;
+            spriteKey = `tile_toxic_sludge_${sludgeFrame}.png`;
+          }
+
+          const img = loadedImages[spriteKey];
+          if (img) {
+            ctx.drawImage(img, isoX - TILE_W / 2, isoY);
+          }
+
+          // Highlight Hovered Tile
+          if (x === hoveredTile.gx && y === hoveredTile.gy) {
+            drawTileDiamondOutline(isoX, isoY + TILE_H / 2, "rgba(74, 246, 38, 0.6)", 2);
+          }
+
+          // Highlight Selected Tile
+          if (x === selectedTile.gx && y === selectedTile.gy) {
+            drawTileDiamondOutline(isoX, isoY + TILE_H / 2, "rgba(255, 176, 0, 0.8)", 2);
+          }
+
+          // Optional Grid lines
+          if (showGrid) {
+            drawTileDiamondOutline(isoX, isoY + TILE_H / 2, "rgba(255, 255, 255, 0.12)", 1);
+          }
+        }
+      }
+
+      // 2. Collect & Depth-Sort Render Entities (Walls, Props, Characters)
+      const renderList = [];
+
+      // Add Map Walls & Props
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const tile = dioramaMap[y][x];
+          const isoX = (x - y) * (TILE_W / 2);
+          const isoY = (x + y) * (TILE_H / 2);
+
+          // Wall
+          if (tile.wall) {
+            renderList.push({
+              type: "wall",
+              key: tile.wall,
+              x: isoX,
+              y: isoY + TILE_H / 2,
+              depth: (x + y) * 100 + (tile.wall.includes("_nw") ? 5 : 20)
+            });
+          }
+
+          // Prop
+          if (tile.prop) {
+            let propKey = tile.prop;
+            // Animated Campfire Brazier
+            if (tile.prop.startsWith("prop_brazier")) {
+              const fireFrame = Math.floor(globalTicks / 6) % 4;
+              propKey = `prop_brazier_${fireFrame}.png`;
+            }
+            renderList.push({
+              type: "prop",
+              key: propKey,
+              gx: x,
+              gy: y,
+              x: isoX,
+              y: isoY + TILE_H / 2,
+              depth: (x + y) * 100 + 50
+            });
+          }
+        }
+      }
+
+      // Add Wanderer Character
+      let charIsoX = (wanderer.gx - wanderer.gy) * (TILE_W / 2);
+      let charIsoY = (wanderer.gx + wanderer.gy) * (TILE_H / 2);
+      if (wanderer.walking && wanderer.path.length > 0) {
+        const next = wanderer.path[0];
+        const nextIsoX = (next.gx - next.gy) * (TILE_W / 2);
+        const nextIsoY = (next.gx + next.gy) * (TILE_H / 2);
+        charIsoX = charIsoX + (nextIsoX - charIsoX) * wanderer.walkProgress;
+        charIsoY = charIsoY + (nextIsoY - charIsoY) * wanderer.walkProgress;
+      }
+      const wandererFrame = wanderer.walking ? (Math.floor(globalTicks / 8) % 4) : (Math.floor(globalTicks / 16) % 4);
+      renderList.push({
+        type: "character",
+        key: `char_wanderer_${wandererFrame}.png`,
+        x: charIsoX,
+        y: charIsoY + TILE_H / 2,
+        depth: (wanderer.gx + wanderer.gy) * 100 + 60,
+        isWanderer: true
+      });
+
+      // Add Sentry Bot Unit
+      const botIsoX = (sentryBot.gx - sentryBot.gy) * (TILE_W / 2);
+      const botIsoY = (sentryBot.gx + sentryBot.gy) * (TILE_H / 2);
+      const botFrame = Math.floor(globalTicks / 14) % 2;
+      renderList.push({
+        type: "character",
+        key: `char_sentry_bot_${botFrame}.png`,
+        x: botIsoX,
+        y: botIsoY + TILE_H / 2,
+        depth: (sentryBot.gx + sentryBot.gy) * 100 + 55
+      });
+
+      // Add Mutant Hound near toxic sludge (gx: 4, gy: 12)
+      const houndIsoX = (4 - 12) * (TILE_W / 2);
+      const houndIsoY = (4 + 12) * (TILE_H / 2);
+      const houndFrame = Math.floor(globalTicks / 20) % 2;
+      renderList.push({
+        type: "character",
+        key: `char_mutant_hound_${houndFrame}.png`,
+        x: houndIsoX,
+        y: houndIsoY + TILE_H / 2,
+        depth: (4 + 12) * 100 + 52
+      });
+
+      // Sort by depth (Y-sorting)
+      renderList.sort((a, b) => a.depth - b.depth);
+
+      // Draw all depth-sorted entities
+      for (const ent of renderList) {
+        const img = loadedImages[ent.key];
+        if (!img) continue;
+
+        // Anchor at bottom center of sprite
+        const drawX = ent.x - Math.floor(img.width / 2);
+        const drawY = ent.y - img.height + 8; // slight baseline embed
+
+        // Draw soft contact shadow underneath props & characters
+        if (ent.type === "character" || ent.type === "prop") {
+          ctx.save();
+          ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+          ctx.beginPath();
+          ctx.ellipse(ent.x, ent.y + 2, img.width * 0.35, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.drawImage(img, drawX, drawY);
+
+        // Highlight selected prop/character
+        if (ent.gx === selectedTile.gx && ent.gy === selectedTile.gy) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255, 176, 0, 0.9)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(drawX - 2, drawY - 2, img.width + 4, img.height + 4);
+          ctx.restore();
+        }
+      }
+
+      // 3. Atmospheric Particles & Wind
+      drawParticles();
+
+      // 4. Dynamic Lighting Overlays
+      drawLightingOverlay();
+
+      ctx.restore();
+
+      // Update wanderer walking animation
+      updateWanderer();
+
+      requestAnimationFrame(render);
+    }
+
+    function drawTileDiamondOutline(cx, cy, strokeStyle, lineWidth) {
+      ctx.save();
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - TILE_H / 2);
+      ctx.lineTo(cx + TILE_W / 2, cy);
+      ctx.lineTo(cx, cy + TILE_H / 2);
+      ctx.lineTo(cx - TILE_W / 2, cy);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      ctx.save();
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x > 500) p.x = -500;
+        if (p.y > 400) p.y = -300;
+
+        if (p.type === "rad") {
+          ctx.fillStyle = `rgba(110, 255, 65, ${p.alpha * 0.7})`;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        } else if (p.type === "ash") {
+          ctx.fillStyle = `rgba(255, 160, 40, ${p.alpha * 0.8})`;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        } else {
+          ctx.fillStyle = `rgba(180, 150, 110, ${p.alpha * 0.4})`;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawLightingOverlay() {
+      ctx.save();
+      // Lighting modes
+      if (timeOfDay === "NIGHT") {
+        ctx.globalCompositeOperation = "multiply";
+        ctx.fillStyle = "rgba(10, 15, 28, 0.88)";
+        ctx.fillRect(-800, -600, 1600, 1200);
+
+        // Warm light around campfire brazier (gx: 8, gy: 7)
+        ctx.globalCompositeOperation = "screen";
+        const fireIso = { x: (8 - 7) * (TILE_W / 2), y: (8 + 7) * (TILE_H / 2) };
+        const flicker = 100 + Math.sin(globalTicks * 0.4) * 12;
+        const fireGrad = ctx.createRadialGradient(fireIso.x, fireIso.y - 12, 10, fireIso.x, fireIso.y - 12, flicker);
+        fireGrad.addColorStop(0, "rgba(255, 170, 40, 0.9)");
+        fireGrad.addColorStop(0.5, "rgba(230, 80, 15, 0.35)");
+        fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = fireGrad;
+        ctx.beginPath();
+        ctx.arc(fireIso.x, fireIso.y - 12, flicker, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Neon Green glow around toxic sludge pool
+        const toxicIso = { x: (2.5 - 12.5) * (TILE_W / 2), y: (2.5 + 12.5) * (TILE_H / 2) };
+        const toxicGrad = ctx.createRadialGradient(toxicIso.x, toxicIso.y, 15, toxicIso.x, toxicIso.y, 90);
+        toxicGrad.addColorStop(0, "rgba(80, 255, 60, 0.7)");
+        toxicGrad.addColorStop(0.6, "rgba(25, 150, 20, 0.25)");
+        toxicGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = toxicGrad;
+        ctx.beginPath();
+        ctx.arc(toxicIso.x, toxicIso.y, 90, 0, Math.PI * 2);
+        ctx.fill();
+
+      } else if (timeOfDay === "DUSK") {
+        ctx.globalCompositeOperation = "multiply";
+        ctx.fillStyle = "rgba(180, 90, 40, 0.35)";
+        ctx.fillRect(-800, -600, 1600, 1200);
+
+        ctx.globalCompositeOperation = "screen";
+        const fireIso = { x: (8 - 7) * (TILE_W / 2), y: (8 + 7) * (TILE_H / 2) };
+        const fireGrad = ctx.createRadialGradient(fireIso.x, fireIso.y - 12, 10, fireIso.x, fireIso.y - 12, 70);
+        fireGrad.addColorStop(0, "rgba(255, 180, 50, 0.5)");
+        fireGrad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = fireGrad;
+        ctx.beginPath();
+        ctx.arc(fireIso.x, fireIso.y - 12, 70, 0, Math.PI * 2);
+        ctx.fill();
+
+      } else if (timeOfDay === "RADSTORM") {
+        ctx.globalCompositeOperation = "multiply";
+        const lightning = Math.random() < 0.02;
+        ctx.fillStyle = lightning ? "rgba(140, 255, 100, 0.5)" : "rgba(18, 65, 25, 0.55)";
+        ctx.fillRect(-800, -600, 1600, 1200);
+
+        ctx.globalCompositeOperation = "screen";
+        ctx.fillStyle = "rgba(74, 246, 38, 0.12)";
+        ctx.fillRect(-800, -600, 1600, 1200);
+      }
+      ctx.restore();
+    }
+
+    /* PATHFINDING & WANDERER DISPATCH */
+    function orderWandererTo(targetGx, targetGy) {
+      if (targetGx < 0 || targetGx >= GRID_SIZE || targetGy < 0 || targetGy >= GRID_SIZE) return;
+      const targetTile = dioramaMap[targetGy][targetGx];
+      if (targetTile.wall) {
+        logTerminal(`[TACTICAL] CANNOT PATHFIND: BLOCKED BY WALL STRUCTURE AT [${targetGx}, ${targetGy}]`, "warn");
+        return;
+      }
+
+      // BFS pathfinding
+      const queue = [{ x: wanderer.gx, y: wanderer.gy, path: [] }];
+      const visited = new Set();
+      visited.add(`${wanderer.gx},${wanderer.gy}`);
+      let foundPath = null;
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        if (curr.x === targetGx && curr.y === targetGy) {
+          foundPath = curr.path;
+          break;
+        }
+
+        const neighbors = [
+          { x: curr.x + 1, y: curr.y },
+          { x: curr.x - 1, y: curr.y },
+          { x: curr.x, y: curr.y + 1 },
+          { x: curr.x, y: curr.y - 1 }
+        ];
+
+        for (const n of neighbors) {
+          if (n.x >= 0 && n.x < GRID_SIZE && n.y >= 0 && n.y < GRID_SIZE) {
+            const key = `${n.x},${n.y}`;
+            if (!visited.has(key)) {
+              visited.add(key);
+              const cell = dioramaMap[n.y][n.x];
+              // Blocked if wall exists
+              if (!cell.wall) {
+                queue.push({ x: n.x, y: n.y, path: [...curr.path, { gx: n.x, gy: n.y }] });
+              }
+            }
+          }
+        }
+      }
+
+      if (foundPath && foundPath.length > 0) {
+        wanderer.path = foundPath;
+        wanderer.walking = true;
+        wanderer.walkProgress = 0;
+        audio.playClick();
+        logTerminal(`[DISPATCH] WANDERER DISPATCHED TO GRID [${targetGx}, ${targetGy}].`);
+        document.getElementById("txt-wanderer-action").innerText = "MARCHING...";
+        document.getElementById("txt-wanderer-action").style.color = "var(--green-rad)";
+      } else {
+        logTerminal(`[TACTICAL] NO CLEAR TRAIL TO [${targetGx}, ${targetGy}].`, "warn");
+      }
+    }
+
+    function updateWanderer() {
+      if (!wanderer.walking) return;
+      if (wanderer.path.length === 0) {
+        wanderer.walking = false;
+        document.getElementById("txt-wanderer-action").innerText = "IDLE / SCOUTING";
+        document.getElementById("txt-wanderer-action").style.color = "var(--amber)";
+        return;
+      }
+
+      wanderer.walkProgress += 0.08;
+      if (wanderer.walkProgress >= 1.0) {
+        const next = wanderer.path.shift();
+        wanderer.gx = next.gx;
+        wanderer.gy = next.gy;
+        wanderer.walkProgress = 0;
+        audio.playFootstep();
+
+        // Check radiation at current tile
+        const currentTile = dioramaMap[wanderer.gy][wanderer.gx];
+        audio.updateRads(currentTile.radLevel);
+        updateRadHUD(currentTile.radLevel);
+
+        if (wanderer.path.length === 0) {
+          wanderer.walking = false;
+          logTerminal(`[DISPATCH] WANDERER ARRIVED AT [${wanderer.gx}, ${wanderer.gy}]. TERRAIN: ${currentTile.name}`);
+          document.getElementById("txt-wanderer-action").innerText = "IDLE / SCOUTING";
+          document.getElementById("txt-wanderer-action").style.color = "var(--amber)";
+        }
+      }
+    }
+
+    /* UI & INSPECTOR UPDATES */
+    function inspectTile(gx, gy) {
+      if (gx < 0 || gx >= GRID_SIZE || gy < 0 || gy >= GRID_SIZE) return;
+      selectedTile = { gx, gy };
+      const cell = dioramaMap[gy][gx];
+      audio.playClick();
+
+      document.getElementById("inspect-name").innerText = `INSPECTOR: ${cell.name.toUpperCase()} [${gx}, ${gy}]`;
+      document.getElementById("inspect-tag").innerText = cell.prop ? `PROP: ${cell.prop}` : (cell.wall ? `WALL: ${cell.wall}` : `TILE: ${cell.ground}`);
+      document.getElementById("inspect-text").innerText = cell.desc;
+      document.getElementById("stat-surface").innerText = cell.surface;
+      document.getElementById("stat-integrity").innerText = cell.wall ? "84%" : "100%";
+      document.getElementById("stat-hazard").innerText = cell.hazard;
+      document.getElementById("txt-zone").innerText = cell.name.toUpperCase();
+
+      updateRadHUD(cell.radLevel);
+      audio.updateRads(cell.radLevel);
+
+      logTerminal(`[INSPECT] [${gx}, ${gy}] ${cell.name} | ${cell.hazard} | ${cell.radLevel.toFixed(1)} RAD/H`);
+    }
+
+    function updateRadHUD(rads) {
+      document.getElementById("txt-rads").innerText = `${rads.toFixed(1)} RAD/H`;
+      const pips = document.querySelectorAll(".meter-pip");
+      const litCount = Math.min(16, Math.floor((rads / 100) * 16));
+      pips.forEach((pip, idx) => {
+        pip.className = "meter-pip";
+        if (idx < litCount) {
+          if (idx < 6) pip.classList.add("lit-green");
+          else if (idx < 11) pip.classList.add("lit-amber");
+          else pip.classList.add("lit-red");
+        }
+      });
+    }
+
+    function logTerminal(msg, type="normal") {
+      const term = document.getElementById("terminal-logs");
+      const div = document.createElement("div");
+      div.className = `log-line ${type}`;
+      div.innerText = msg;
+      term.appendChild(div);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    /* INTERACTION & EVENT LISTENERS */
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.button === 0) { // Left click
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const grid = screenToGrid(mouseX, mouseY);
+
+        if (e.shiftKey) {
+          // Shift+Click: Order Wanderer
+          orderWandererTo(grid.gx, grid.gy);
+        } else {
+          // Normal click: inspect or pan
+          camera.isPanning = true;
+          camera.startX = e.clientX - camera.x;
+          camera.startY = e.clientY - camera.y;
+          document.getElementById("viewport-container").classList.add("panning");
+          if (grid.gx >= 0 && grid.gx < GRID_SIZE && grid.gy >= 0 && grid.gy < GRID_SIZE) {
+            inspectTile(grid.gx, grid.gy);
+          }
+        }
+      }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      if (camera.isPanning) {
+        camera.x = e.clientX - camera.startX;
+        camera.y = e.clientY - camera.startY;
+      } else {
+        const grid = screenToGrid(mouseX, mouseY);
+        if (grid.gx >= 0 && grid.gx < GRID_SIZE && grid.gy >= 0 && grid.gy < GRID_SIZE) {
+          hoveredTile = grid;
+          document.getElementById("txt-coords").innerText = `X:${grid.gx < 10 ? '0' : ''}${grid.gx} Y:${grid.gy < 10 ? '0' : ''}${grid.gy}`;
+          
+          const badge = document.getElementById("cursor-badge");
+          badge.style.display = "block";
+          badge.style.left = `${e.clientX + 14}px`;
+          badge.style.top = `${e.clientY + 14}px`;
+          const cell = dioramaMap[grid.gy][grid.gx];
+          badge.innerText = `[${grid.gx}, ${grid.gy}] ${cell.name}`;
+        } else {
+          document.getElementById("cursor-badge").style.display = "none";
+        }
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      camera.isPanning = false;
+      document.getElementById("viewport-container").classList.remove("panning");
+    });
+
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+      const newZoom = Math.min(3.5, Math.max(0.8, camera.zoom * zoomFactor));
+      camera.zoom = newZoom;
+    }, { passive: false });
+
+    // Keyboard Pan & Controls
+    window.addEventListener("keydown", (e) => {
+      const panSpeed = 24;
+      if (e.key === "w" || e.key === "ArrowUp") camera.y += panSpeed;
+      if (e.key === "s" || e.key === "ArrowDown") camera.y -= panSpeed;
+      if (e.key === "a" || e.key === "ArrowLeft") camera.x += panSpeed;
+      if (e.key === "d" || e.key === "ArrowRight") camera.x -= panSpeed;
+      if (e.key === " ") {
+        orderWandererTo(hoveredTile.gx, hoveredTile.gy);
+      }
+    });
+
+    /* TOOLBAR CONTROLS */
+    document.getElementById("btn-sound").addEventListener("click", () => {
+      const on = audio.toggle();
+      const btn = document.getElementById("btn-sound");
+      btn.innerHTML = on ? "<span>🔊</span> AUDIO: ON" : "<span>🔇</span> AUDIO: MUTED";
+      btn.className = on ? "btn-chunky active-green" : "btn-chunky";
+      logTerminal(`[AUDIO] SYNTHESIZER ${on ? 'ACTIVATED' : 'MUTED'}.`);
+    });
+
+    const lightPresets = ["NOON", "DUSK", "NIGHT", "RADSTORM"];
+    document.getElementById("btn-lighting").addEventListener("click", () => {
+      const curIdx = lightPresets.indexOf(timeOfDay);
+      timeOfDay = lightPresets[(curIdx + 1) % lightPresets.length];
+      document.getElementById("btn-lighting").innerHTML = `<span>💡</span> TIME: ${timeOfDay}`;
+      audio.playClick();
+      logTerminal(`[ENVIRONMENT] ATMOSPHERE SHIFTED TO ${timeOfDay}.`);
+    });
+
+    document.getElementById("btn-crt").addEventListener("click", () => {
+      const overlay = document.getElementById("crt-overlay");
+      const btn = document.getElementById("btn-crt");
+      overlay.classList.toggle("disabled");
+      const active = !overlay.classList.contains("disabled");
+      btn.innerHTML = active ? "<span>📺</span> CRT: ON" : "<span>📺</span> CRT: OFF";
+      btn.className = active ? "btn-chunky active" : "btn-chunky";
+      audio.playClick();
+    });
+
+    document.getElementById("btn-grid").addEventListener("click", () => {
+      showGrid = !showGrid;
+      const btn = document.getElementById("btn-grid");
+      btn.innerHTML = showGrid ? "<span>📐</span> GRID: ON" : "<span>📐</span> GRID: OFF";
+      btn.className = showGrid ? "btn-chunky active-green" : "btn-chunky";
+      audio.playClick();
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      camera.zoom = 1.6;
+      centerCamera();
+      audio.playClick();
+      logTerminal("[VIEWPORT] CAMERA RE-CENTERED ON OUTPOST DELTA.");
+    });
+
+    // Action Buttons
+    document.getElementById("btn-move-wanderer").addEventListener("click", () => {
+      orderWandererTo(selectedTile.gx, selectedTile.gy);
+    });
+
+    document.getElementById("btn-poke-fire").addEventListener("click", () => {
+      audio.playClick();
+      // Spawn ember burst at campfire (8, 7)
+      const fireIso = { x: (8 - 7) * (TILE_W / 2), y: (8 + 7) * (TILE_H / 2) };
+      for (let i = 0; i < 15; i++) {
+        particles.push({
+          x: fireIso.x + (Math.random() * 20 - 10),
+          y: fireIso.y - 10,
+          vx: (Math.random() * 2 - 1) * 0.8,
+          vy: - (1.5 + Math.random() * 2.0),
+          size: 2,
+          type: "ash",
+          alpha: 1.0
+        });
+      }
+      logTerminal("[CAMPFIRE] EMBER BED STOKED. HEAT RADIATION SURGED.");
+    });
+
+    document.getElementById("btn-hack-terminal").addEventListener("click", () => {
+      audio.playTerminalBeep();
+      logTerminal("[TERMINAL] > ACCESSING VAULT-TEC DATABASE...");
+      setTimeout(() => logTerminal("[TERMINAL] > OVERSEER LOG 2161: OUTPOST ABANDONED."), 400);
+      setTimeout(() => logTerminal("[TERMINAL] > CARGO MANIFEST: 40x RIFLE AMMO, 2x STEALTH BOY."), 800);
+    });
+
+    document.getElementById("btn-drone-scan").addEventListener("click", () => {
+      audio.playTerminalBeep();
+      logTerminal("[RADAR] TRANSMITTING PULSE... 3 CONTACTS IN SECTOR.");
+      logTerminal("[RADAR] > 1x SURVIVOR (LEATHER DUSTER, RIFLE ARMED)");
+      logTerminal("[RADAR] > 1x SENTINEL BOT PATROL UNIT (SECTOR SW)");
+      logTerminal("[RADAR] > 1x IRRADIATED CANINE NEAR CONTAMINATED SUMP");
+    });
+
+    document.getElementById("btn-preset-scene").addEventListener("click", () => {
+      audio.playClick();
+      timeOfDay = timeOfDay === "NIGHT" ? "NOON" : "NIGHT";
+      document.getElementById("btn-lighting").innerHTML = `<span>💡</span> TIME: ${timeOfDay}`;
+      logTerminal(`[ATMOSPHERE] SWITCHED SCENE PRESET: ${timeOfDay} VIEW.`);
+    });
+
+    /* SPRITE VAULT DRAWER */
+    const vaultDrawer = document.getElementById("sprite-vault-drawer");
+    document.getElementById("btn-vault").addEventListener("click", () => {
+      vaultDrawer.classList.toggle("open");
+      audio.playClick();
+    });
+    document.getElementById("btn-close-vault").addEventListener("click", () => {
+      vaultDrawer.classList.remove("open");
+      audio.playClick();
+    });
+
+    function populateVault() {
+      const container = document.getElementById("vault-list");
+      container.innerHTML = "";
+      for (const [name, b64] of Object.entries(SPRITES_B64)) {
+        const card = document.createElement("div");
+        card.className = "sprite-card";
+        card.title = `Click to stamp/inspect ${name}`;
+
+        const img = document.createElement("img");
+        img.src = b64;
+
+        const label = document.createElement("div");
+        label.className = "sprite-name";
+        label.innerText = name;
+
+        card.appendChild(img);
+        card.appendChild(label);
+
+        card.addEventListener("click", () => {
+          audio.playClick();
+          logTerminal(`[VAULT] SELECTED SPRITE: ${name}`);
+          // If clicked, place or preview on selected tile
+          if (name.startsWith("tile_")) {
+            dioramaMap[selectedTile.gy][selectedTile.gx].ground = name;
+          } else if (name.startsWith("wall_") || name.startsWith("fence_") || name.startsWith("barricade_")) {
+            dioramaMap[selectedTile.gy][selectedTile.gx].wall = name;
+          } else if (name.startsWith("prop_")) {
+            dioramaMap[selectedTile.gy][selectedTile.gx].prop = name;
+          }
+          inspectTile(selectedTile.gx, selectedTile.gy);
+        });
+
+        container.appendChild(card);
+      }
+    }
+
+    /* BOOTSTRAP */
+    preloadSprites(() => {
+      initMap();
+      resizeCanvas();
+      populateVault();
+      inspectTile(7, 8);
+      logTerminal("[INIT] ALL 41 ASSETS RENDER-READY.");
+      logTerminal("[HINT] CLICK ANYWHERE TO PAN/INSPECT. CLICK 'ORDER WANDERER' OR SHIFT+CLICK TO WALK!");
+      requestAnimationFrame(render);
+    });
+  </script>
+</body>
+</html>
