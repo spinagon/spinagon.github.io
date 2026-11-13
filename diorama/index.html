@@ -719,16 +719,33 @@
     let imagesRemaining = Object.keys(SPRITES_B64).length;
 
     function preloadSprites(callback) {
+      const total = Object.keys(SPRITES_B64).length;
+      let loaded = 0;
+      let finished = false;
+
+      function checkDone() {
+        if (!finished && loaded >= total) {
+          finished = true;
+          callback();
+        }
+      }
+
       for (const [name, b64] of Object.entries(SPRITES_B64)) {
         const img = new Image();
-        img.onload = () => {
-          loadedImages[name] = img;
-          imagesRemaining--;
-          if (imagesRemaining === 0) {
-            callback();
-          }
-        };
+        let handled = false;
+        function onDone(success) {
+          if (handled) return;
+          handled = true;
+          if (success) loadedImages[name] = img;
+          loaded++;
+          checkDone();
+        }
+        img.onload = () => onDone(true);
+        img.onerror = () => onDone(false);
         img.src = b64;
+        if (img.complete && img.naturalWidth > 0) {
+          onDone(true);
+        }
       }
     }
 
@@ -900,7 +917,7 @@
     let camera = {
       x: 0,
       y: 0,
-      zoom: 1.6,
+      zoom: 1.25,
       isPanning: false,
       startX: 0,
       startY: 0
@@ -911,7 +928,8 @@
     let animFrame = 0;
     let globalTicks = 0;
     let showGrid = false;
-    let timeOfDay = "NOON"; // NOON, DUSK, NIGHT, RADSTORM
+    const urlTime = new URLSearchParams(window.location.search).get('time');
+    let timeOfDay = (urlTime && ["NOON", "DUSK", "NIGHT", "RADSTORM"].includes(urlTime.toUpperCase())) ? urlTime.toUpperCase() : "NOON";
 
     // Atmospheric Particles
     const particles = [];
@@ -927,20 +945,25 @@
       });
     }
 
+    let cameraInitialized = false;
     function resizeCanvas() {
       const container = document.getElementById("viewport-container");
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      if (camera.x === 0 && camera.y === 0) {
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || (window.innerHeight - 225);
+      canvas.width = w;
+      canvas.height = h;
+      if (!cameraInitialized || camera.x === 0) {
         centerCamera();
+        if (w > 0 && h > 0) cameraInitialized = true;
       }
     }
     window.addEventListener("resize", resizeCanvas);
 
     function centerCamera() {
-      // Center diorama origin in viewport
-      camera.x = canvas.width / 2;
-      camera.y = canvas.height / 2 - 40;
+      const w = canvas.width || 1200;
+      const h = canvas.height || 600;
+      camera.x = Math.round(w / 2);
+      camera.y = Math.round(h / 2 - 224 * camera.zoom);
     }
 
     function gridToScreen(gx, gy) {
@@ -1131,12 +1154,17 @@
         }
       }
 
-      // 3. Atmospheric Particles & Wind
-      drawParticles();
+      // Restore world camera transform before screen-space lighting composite
+      ctx.restore();
 
-      // 4. Dynamic Lighting Overlays
+      // 3. Dynamic Lighting Overlays (illuminates ground, walls, props & characters)
       drawLightingOverlay();
 
+      // 4. Atmospheric Particles & Embers (drawn on top in world space so glowing embers pop)
+      ctx.save();
+      ctx.translate(camera.x, camera.y);
+      ctx.scale(camera.zoom, camera.zoom);
+      drawParticles();
       ctx.restore();
 
       // Update wanderer walking animation
@@ -1181,63 +1209,153 @@
       ctx.restore();
     }
 
+    // Dedicated lightmap canvas for authentic ambient darkness cutout lighting
+    const lightCanvas = document.createElement("canvas");
+    const lightCtx = lightCanvas.getContext("2d");
+
     function drawLightingOverlay() {
-      ctx.save();
-      // Lighting modes
-      if (timeOfDay === "NIGHT") {
-        ctx.globalCompositeOperation = "multiply";
-        ctx.fillStyle = "rgba(10, 15, 28, 0.88)";
-        ctx.fillRect(-800, -600, 1600, 1200);
+      if (timeOfDay === "NOON") return; // full daytime sunlight
 
-        // Warm light around campfire brazier (gx: 8, gy: 7)
-        ctx.globalCompositeOperation = "screen";
-        const fireIso = { x: (8 - 7) * (TILE_W / 2), y: (8 + 7) * (TILE_H / 2) };
-        const flicker = 100 + Math.sin(globalTicks * 0.4) * 12;
-        const fireGrad = ctx.createRadialGradient(fireIso.x, fireIso.y - 12, 10, fireIso.x, fireIso.y - 12, flicker);
-        fireGrad.addColorStop(0, "rgba(255, 170, 40, 0.9)");
-        fireGrad.addColorStop(0.5, "rgba(230, 80, 15, 0.35)");
-        fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = fireGrad;
-        ctx.beginPath();
-        ctx.arc(fireIso.x, fireIso.y - 12, flicker, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Neon Green glow around toxic sludge pool
-        const toxicIso = { x: (2.5 - 12.5) * (TILE_W / 2), y: (2.5 + 12.5) * (TILE_H / 2) };
-        const toxicGrad = ctx.createRadialGradient(toxicIso.x, toxicIso.y, 15, toxicIso.x, toxicIso.y, 90);
-        toxicGrad.addColorStop(0, "rgba(80, 255, 60, 0.7)");
-        toxicGrad.addColorStop(0.6, "rgba(25, 150, 20, 0.25)");
-        toxicGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = toxicGrad;
-        ctx.beginPath();
-        ctx.arc(toxicIso.x, toxicIso.y, 90, 0, Math.PI * 2);
-        ctx.fill();
-
-      } else if (timeOfDay === "DUSK") {
-        ctx.globalCompositeOperation = "multiply";
-        ctx.fillStyle = "rgba(180, 90, 40, 0.35)";
-        ctx.fillRect(-800, -600, 1600, 1200);
-
-        ctx.globalCompositeOperation = "screen";
-        const fireIso = { x: (8 - 7) * (TILE_W / 2), y: (8 + 7) * (TILE_H / 2) };
-        const fireGrad = ctx.createRadialGradient(fireIso.x, fireIso.y - 12, 10, fireIso.x, fireIso.y - 12, 70);
-        fireGrad.addColorStop(0, "rgba(255, 180, 50, 0.5)");
-        fireGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = fireGrad;
-        ctx.beginPath();
-        ctx.arc(fireIso.x, fireIso.y - 12, 70, 0, Math.PI * 2);
-        ctx.fill();
-
-      } else if (timeOfDay === "RADSTORM") {
-        ctx.globalCompositeOperation = "multiply";
-        const lightning = Math.random() < 0.02;
-        ctx.fillStyle = lightning ? "rgba(140, 255, 100, 0.5)" : "rgba(18, 65, 25, 0.55)";
-        ctx.fillRect(-800, -600, 1600, 1200);
-
-        ctx.globalCompositeOperation = "screen";
-        ctx.fillStyle = "rgba(74, 246, 38, 0.12)";
-        ctx.fillRect(-800, -600, 1600, 1200);
+      if (lightCanvas.width !== canvas.width || lightCanvas.height !== canvas.height) {
+        lightCanvas.width = canvas.width;
+        lightCanvas.height = canvas.height;
       }
+
+      // 1. Atmospheric ambient darkness layer
+      let ambientColor;
+      if (timeOfDay === "NIGHT") {
+        ambientColor = "rgba(7, 10, 18, 0.94)"; // deep night darkness
+      } else if (timeOfDay === "DUSK") {
+        ambientColor = "rgba(52, 24, 16, 0.68)"; // twilight orange-brown
+      } else if (timeOfDay === "RADSTORM") {
+        const flash = Math.random() < 0.03;
+        ambientColor = flash ? "rgba(45, 110, 50, 0.35)" : "rgba(10, 34, 14, 0.84)";
+      }
+
+      lightCtx.clearRect(0, 0, lightCanvas.width, lightCanvas.height);
+      lightCtx.fillStyle = ambientColor;
+      lightCtx.fillRect(0, 0, lightCanvas.width, lightCanvas.height);
+
+      // Apply current camera pan & zoom to the lightmap
+      lightCtx.save();
+      lightCtx.translate(camera.x, camera.y);
+      lightCtx.scale(camera.zoom, camera.zoom);
+
+      // 2. Cut out holes in the darkness ("destination-out")
+      // This reveals the crisp, full-color underlying sprites and terrain!
+      lightCtx.globalCompositeOperation = "destination-out";
+
+      function punchLight(cx, cy, radius, maxAlpha = 1.0) {
+        const grad = lightCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        grad.addColorStop(0, "rgba(0, 0, 0, " + maxAlpha + ")");
+        grad.addColorStop(0.35, "rgba(0, 0, 0, " + (maxAlpha * 0.88).toFixed(3) + ")");
+        grad.addColorStop(0.7, "rgba(0, 0, 0, " + (maxAlpha * 0.4).toFixed(3) + ")");
+        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        lightCtx.fillStyle = grad;
+        lightCtx.beginPath();
+        lightCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+        lightCtx.fill();
+      }
+
+      // A. Campfire Brazier at (x: 7, y: 8) - dynamic flickering illumination
+      const fireIso = { x: (7 - 8) * (TILE_W / 2), y: (7 + 8) * (TILE_H / 2) + TILE_H / 2 - 14 };
+      const fireRadius = (timeOfDay === "NIGHT" ? 170 : 125) + Math.sin(globalTicks * 0.35) * 8 + (Math.random() - 0.5) * 4;
+      punchLight(fireIso.x, fireIso.y, fireRadius, timeOfDay === "NIGHT" ? 0.98 : 0.85);
+
+      // B. Radioactive Toxic Sludge Pond & Breached Drums at (2.5, 12.5) - pulsating neon glow
+      const toxicIso = { x: (2.5 - 12.5) * (TILE_W / 2), y: (2.5 + 12.5) * (TILE_H / 2) + TILE_H / 2 };
+      const toxicRadius = 140 + Math.sin(globalTicks * 0.18) * 8;
+      punchLight(toxicIso.x, toxicIso.y, toxicRadius, 0.92);
+
+      // C. RobCo Computer Terminal at (x: 10, y: 7)
+      const termIso = { x: (10 - 7) * (TILE_W / 2), y: (10 + 7) * (TILE_H / 2) + TILE_H / 2 - 16 };
+      punchLight(termIso.x, termIso.y, 85, 0.82);
+
+      // D. Wasteland Wanderer personal flashlight / Pip-Boy light
+      let charX = (wanderer.gx - wanderer.gy) * (TILE_W / 2);
+      let charY = (wanderer.gx + wanderer.gy) * (TILE_H / 2) + TILE_H / 2 - 16;
+      if (wanderer.walking && wanderer.path.length > 0) {
+        const next = wanderer.path[0];
+        const nextX = (next.gx - next.gy) * (TILE_W / 2);
+        const nextY = (next.gx + next.gy) * (TILE_H / 2) + TILE_H / 2 - 16;
+        charX += (nextX - charX) * wanderer.walkProgress;
+        charY += (nextY - charY) * wanderer.walkProgress;
+      }
+      punchLight(charX, charY, 90, timeOfDay === "NIGHT" ? 0.82 : 0.6);
+
+      // E. Sentry Bot optical sensor light
+      const botX = (sentryBot.gx - sentryBot.gy) * (TILE_W / 2);
+      const botY = (sentryBot.gx + sentryBot.gy) * (TILE_H / 2) + TILE_H / 2 - 14;
+      punchLight(botX, botY, 75, 0.78);
+
+      // 3. Add soft colored ambient warmth into the illuminated regions ("source-over")
+      lightCtx.globalCompositeOperation = "source-over";
+
+      // Firelight warm amber glow
+      const fireGrad = lightCtx.createRadialGradient(fireIso.x, fireIso.y, 0, fireIso.x, fireIso.y, fireRadius);
+      fireGrad.addColorStop(0, "rgba(255, 175, 45, 0.38)");
+      fireGrad.addColorStop(0.35, "rgba(240, 100, 20, 0.2)");
+      fireGrad.addColorStop(0.75, "rgba(180, 45, 10, 0.06)");
+      fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = fireGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(fireIso.x, fireIso.y, fireRadius, 0, Math.PI * 2);
+      lightCtx.fill();
+
+      // Toxic Sludge radioactive green glow
+      const toxicGrad = lightCtx.createRadialGradient(toxicIso.x, toxicIso.y, 0, toxicIso.x, toxicIso.y, toxicRadius);
+      toxicGrad.addColorStop(0, "rgba(80, 255, 50, 0.4)");
+      toxicGrad.addColorStop(0.45, "rgba(40, 195, 25, 0.2)");
+      toxicGrad.addColorStop(0.8, "rgba(15, 120, 15, 0.06)");
+      toxicGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = toxicGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(toxicIso.x, toxicIso.y, toxicRadius, 0, Math.PI * 2);
+      lightCtx.fill();
+
+      // Terminal CRT phosphor green aura
+      const termGrad = lightCtx.createRadialGradient(termIso.x, termIso.y, 0, termIso.x, termIso.y, 85);
+      termGrad.addColorStop(0, "rgba(60, 245, 95, 0.32)");
+      termGrad.addColorStop(0.6, "rgba(30, 160, 60, 0.12)");
+      termGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = termGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(termIso.x, termIso.y, 85, 0, Math.PI * 2);
+      lightCtx.fill();
+
+      // Sentry Bot red scanner beam / aura
+      const botGrad = lightCtx.createRadialGradient(botIso.x, botIso.y, 0, botIso.x, botIso.y, 75);
+      botGrad.addColorStop(0, "rgba(255, 50, 30, 0.4)");
+      botGrad.addColorStop(0.6, "rgba(180, 20, 15, 0.15)");
+      botGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = botGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(botIso.x, botIso.y, 75, 0, Math.PI * 2);
+      lightCtx.fill();
+
+      // Wanderer warm Pip-Boy / lantern glow
+      const charGrad = lightCtx.createRadialGradient(charX, charY, 0, charX, charY, 90);
+      charGrad.addColorStop(0, "rgba(255, 210, 120, 0.26)");
+      charGrad.addColorStop(0.7, "rgba(220, 160, 70, 0.08)");
+      charGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = charGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(charX, charY, 90, 0, Math.PI * 2);
+      lightCtx.fill();
+      charGrad.addColorStop(0.7, "rgba(220, 160, 70, 0.08)");
+      charGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      lightCtx.fillStyle = charGrad;
+      lightCtx.beginPath();
+      lightCtx.arc(charX, charY - 16, 75, 0, Math.PI * 2);
+      lightCtx.fill();
+
+      lightCtx.restore();
+
+      // 4. Composite the darkness mask over the main viewport
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(lightCanvas, 0, 0);
       ctx.restore();
     }
 
@@ -1484,7 +1602,7 @@
     });
 
     document.getElementById("btn-reset").addEventListener("click", () => {
-      camera.zoom = 1.6;
+      camera.zoom = 1.25;
       centerCamera();
       audio.playClick();
       logTerminal("[VIEWPORT] CAMERA RE-CENTERED ON OUTPOST DELTA.");
@@ -1587,6 +1705,7 @@
       initMap();
       resizeCanvas();
       populateVault();
+      document.getElementById("btn-lighting").innerHTML = `<span>💡</span> TIME: ${timeOfDay}`;
       inspectTile(7, 8);
       logTerminal("[INIT] ALL 41 ASSETS RENDER-READY.");
       logTerminal("[HINT] CLICK ANYWHERE TO PAN/INSPECT. CLICK 'ORDER WANDERER' OR SHIFT+CLICK TO WALK!");
