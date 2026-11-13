@@ -987,8 +987,9 @@
 
     /* MAIN RENDER LOOP */
     function render() {
-      globalTicks++;
-      animFrame = Math.floor(globalTicks / 10);
+      try {
+        globalTicks++;
+        animFrame = Math.floor(globalTicks / 10);
 
       // Clear Screen
       ctx.fillStyle = timeOfDay === "RADSTORM" ? "#061208" : (timeOfDay === "NIGHT" ? "#040507" : "#0d0f13");
@@ -1169,8 +1170,11 @@
 
       // Update wanderer walking animation
       updateWanderer();
-
-      requestAnimationFrame(render);
+      } catch (err) {
+        console.error("Render loop error:", err);
+      } finally {
+        requestAnimationFrame(render);
+      }
     }
 
     function drawTileDiamondOutline(cx, cy, strokeStyle, lineWidth) {
@@ -1272,21 +1276,25 @@
       punchLight(termIso.x, termIso.y, 85, 0.82);
 
       // D. Wasteland Wanderer personal flashlight / Pip-Boy light
-      let charX = (wanderer.gx - wanderer.gy) * (TILE_W / 2);
-      let charY = (wanderer.gx + wanderer.gy) * (TILE_H / 2) + TILE_H / 2 - 16;
+      const charIso = {
+        x: (wanderer.gx - wanderer.gy) * (TILE_W / 2),
+        y: (wanderer.gx + wanderer.gy) * (TILE_H / 2) + TILE_H / 2 - 16
+      };
       if (wanderer.walking && wanderer.path.length > 0) {
         const next = wanderer.path[0];
         const nextX = (next.gx - next.gy) * (TILE_W / 2);
         const nextY = (next.gx + next.gy) * (TILE_H / 2) + TILE_H / 2 - 16;
-        charX += (nextX - charX) * wanderer.walkProgress;
-        charY += (nextY - charY) * wanderer.walkProgress;
+        charIso.x += (nextX - charIso.x) * wanderer.walkProgress;
+        charIso.y += (nextY - charIso.y) * wanderer.walkProgress;
       }
-      punchLight(charX, charY, 90, timeOfDay === "NIGHT" ? 0.82 : 0.6);
+      punchLight(charIso.x, charIso.y, 90, timeOfDay === "NIGHT" ? 0.82 : 0.6);
 
       // E. Sentry Bot optical sensor light
-      const botX = (sentryBot.gx - sentryBot.gy) * (TILE_W / 2);
-      const botY = (sentryBot.gx + sentryBot.gy) * (TILE_H / 2) + TILE_H / 2 - 14;
-      punchLight(botX, botY, 75, 0.78);
+      const botIso = {
+        x: (sentryBot.gx - sentryBot.gy) * (TILE_W / 2),
+        y: (sentryBot.gx + sentryBot.gy) * (TILE_H / 2) + TILE_H / 2 - 14
+      };
+      punchLight(botIso.x, botIso.y, 75, 0.78);
 
       // 3. Add soft colored ambient warmth into the illuminated regions ("source-over")
       lightCtx.globalCompositeOperation = "source-over";
@@ -1334,19 +1342,13 @@
       lightCtx.fill();
 
       // Wanderer warm Pip-Boy / lantern glow
-      const charGrad = lightCtx.createRadialGradient(charX, charY, 0, charX, charY, 90);
+      const charGrad = lightCtx.createRadialGradient(charIso.x, charIso.y, 0, charIso.x, charIso.y, 90);
       charGrad.addColorStop(0, "rgba(255, 210, 120, 0.26)");
       charGrad.addColorStop(0.7, "rgba(220, 160, 70, 0.08)");
       charGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       lightCtx.fillStyle = charGrad;
       lightCtx.beginPath();
-      lightCtx.arc(charX, charY, 90, 0, Math.PI * 2);
-      lightCtx.fill();
-      charGrad.addColorStop(0.7, "rgba(220, 160, 70, 0.08)");
-      charGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      lightCtx.fillStyle = charGrad;
-      lightCtx.beginPath();
-      lightCtx.arc(charX, charY - 16, 75, 0, Math.PI * 2);
+      lightCtx.arc(charIso.x, charIso.y, 90, 0, Math.PI * 2);
       lightCtx.fill();
 
       lightCtx.restore();
